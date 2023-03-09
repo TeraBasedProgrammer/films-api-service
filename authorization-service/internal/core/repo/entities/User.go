@@ -9,13 +9,22 @@ import (
 
 const DefaultExecTimeout = 5 * time.Second
 
+type UserType string
+
+const (
+	Basic   UserType = "basic"
+	Admin   UserType = "admin"
+	Premium UserType = "premium"
+)
+
 type User struct {
 	Id        int       `json:"id" db:"id"`
 	Avatar    string    `json:"avatar" db:"avatar_name"`
-	Username  string    `json:"username" db:"username"`
-	Email     string    `json:"email" db:"email"`
-	Password  string    `json:"password" db:"password"`
+	Username  string    `json:"username" db:"username" validate:"required,alphanum,lte=8,gte=2"`
+	Email     string    `json:"email" db:"email" validate:"required,email"`
+	Password  string    `json:"password" db:"password" validate:"required,gte=8,lte=40,password"`
 	Salt      string    `json:"salt" db:"salt"`
+	UserType  UserType  `json:"-" db:"user_type"`
 	CreatedAt time.Time `json:"-" db:"created_at"`
 	UpdatedAt time.Time `json:"-" db:"updated_at"`
 }
@@ -33,8 +42,8 @@ func (r *UserRepo) AddUser(user *User) (*User, error) {
 	defer cancel()
 
 	query := `
-	INSERT INTO users (avatar_name, username, email, password, salt, created_at, updated_at)
-	VALUES (:avatar_name, :username, :email, :password, :salt, :created_at, :updated_at)
+	INSERT INTO users (avatar_name, username, email, password, salt, created_at, updated_at, user_type)
+	VALUES (:avatar_name, :username, :email, :password, :salt, :created_at, :updated_at, :user_type)
 `
 	rows, err := r.db.NamedQueryContext(
 		ctx,
