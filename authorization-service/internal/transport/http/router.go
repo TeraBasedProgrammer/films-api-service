@@ -25,9 +25,19 @@ func (r *Router) SetUpRouts() http.Handler {
 	app := chi.NewRouter()
 
 	app.Use(middleware.Recoverer)
+	app.Use(middleware.Logger)
 
-	app.Post("/auth/signin", r.controllers.SignInController.SignIn)
-	app.Post("/auth/signup", r.controllers.SignUpController.SignUp)
+	//auth
+	app.Route("/auth", func(router chi.Router) {
+		router.Post("/signin", r.controllers.SignInController.SignIn)
+		router.Post("/signup", r.controllers.SignUpController.SignUp)
+	})
+
+	//verification
+	app.Route("/verify", func(router chi.Router) {
+		router.Get("/send", r.controllers.VerificationController.SendCode)
+		router.Post("/check", r.controllers.VerificationController.VerifyCode)
+	})
 
 	return app
 }

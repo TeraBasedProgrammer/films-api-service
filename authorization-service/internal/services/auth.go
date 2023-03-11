@@ -5,6 +5,7 @@ import (
 	"github.com/anaskhan96/go-password-encoder"
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/core/repo/entities"
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/pkg"
+	email_service "github.com/anton-uvarenko/cinema/authorization-service/internal/pkg/email-service"
 	"net/http"
 	"time"
 )
@@ -54,6 +55,8 @@ func (s *AuthService) SignUp(user *entities.User) (string, error) {
 	user.UpdatedAt = time.Now()
 	user.Salt, user.Password = password.Encode(user.Password, nil)
 	user.UserType = entities.Basic
+	user.IsVerified = false
+	user.VerificationCode = email_service.CreateVerificationCode()
 
 	dbUser, err := s.userRepo.AddUser(user)
 	if err != nil {
