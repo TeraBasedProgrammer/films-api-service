@@ -6,15 +6,17 @@ import (
 )
 
 type Controllers struct {
-	SignInController       *controllers.SignInController
-	SignUpController       *controllers.SignUpController
-	VerificationController *controllers.VerificationController
+	SignInController           *controllers.SignInController
+	SignUpController           *controllers.SignUpController
+	VerificationController     *controllers.VerificationController
+	PasswordRecoveryController *controllers.PassRecoveryController
 }
 
 func NewControllers(service *services.Service) *Controllers {
 	return &Controllers{
-		SignInController:       controllers.NewSignInController(service.AuthService),
-		SignUpController:       controllers.NewSignUpController(service.AuthService),
-		VerificationController: controllers.NewVerificationController(service.VerificationService),
+		SignInController:           controllers.NewSignInController(service.AuthService),
+		SignUpController:           controllers.NewSignUpController(service.AuthService),
+		VerificationController:     controllers.NewVerificationController(service.VerificationService),
+		PasswordRecoveryController: controllers.NewPassRecoveryController(service.PasswordRecoveryService),
 	}
 }

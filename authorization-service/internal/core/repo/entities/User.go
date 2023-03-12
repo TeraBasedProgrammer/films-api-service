@@ -18,17 +18,18 @@ const (
 )
 
 type User struct {
-	Id               int       `json:"id" db:"id"`
-	Avatar           string    `json:"avatar" db:"avatar_name"`
-	Username         string    `json:"username" db:"username" validate:"required,alphanum,lte=8,gte=2"`
-	Email            string    `json:"email" db:"email" validate:"required,email"`
-	Password         string    `json:"password" db:"password" validate:"required,gte=8,lte=40,password"`
-	Salt             string    `json:"salt" db:"salt"`
-	UserType         UserType  `json:"-" db:"user_type"`
-	IsVerified       bool      `json:"-" db:"is_verified"`
-	VerificationCode int       `json:"-" db:"verification_code"`
-	CreatedAt        time.Time `json:"-" db:"created_at"`
-	UpdatedAt        time.Time `json:"-" db:"updated_at"`
+	Id                   int       `json:"id" db:"id"`
+	Avatar               string    `json:"avatar" db:"avatar_name"`
+	Username             string    `json:"username" db:"username" validate:"required,alphanum,lte=8,gte=2"`
+	Email                string    `json:"email" db:"email" validate:"required,email"`
+	Password             string    `json:"password" db:"password" validate:"required,gte=8,lte=40,password"`
+	Salt                 string    `json:"salt" db:"salt"`
+	UserType             UserType  `json:"-" db:"user_type"`
+	IsVerified           bool      `json:"-" db:"is_verified"`
+	VerificationCode     int       `json:"-" db:"verification_code"`
+	PasswordRecoveryCode int       `json:"-" db:"password_recovery_code"`
+	CreatedAt            time.Time `json:"-" db:"created_at"`
+	UpdatedAt            time.Time `json:"-" db:"updated_at"`
 }
 
 type UserRepo struct {
@@ -97,6 +98,7 @@ func (r *UserRepo) GetUserById(id int) (*User, error) {
 	SELECT 
 	    id,  
 	    email,
+	    username,
 	    verification_code
 	FROM users
 	WHERE id = $1
@@ -116,7 +118,11 @@ func (r *UserRepo) GetUserByEmail(email string) (*User, error) {
 
 	query := `
 	SELECT
-	    id, avatar_name, username, email, password, salt, created_at, updated_at
+	    id, 
+	    avatar_name, 
+	    username, 
+	    email, 
+		password_recovery_code
 	FROM USERS
 	WHERE email = $1
 `
@@ -137,9 +143,46 @@ func (r *UserRepo) MarkAsVerified(id int) error {
 	query := `
 	UPDATE users
 	SET is_verified = true
-	WHERE id = ?
+	WHERE id = $1
 `
 	_, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		logrus.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepo) SetPasswordRecoveryCode(id int, code int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultExecTimeout)
+	defer cancel()
+
+	query := `
+	UPDATE users
+	SET password_recovery_code = $1
+	WHERE id = $2
+`
+	_, err := r.db.ExecContext(ctx, query, code, id)
+	if err != nil {
+		logrus.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepo) UpdatePassword(id int, password string, salt string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultExecTimeout)
+	defer cancel()
+
+	query := `
+	UPDATE users
+	SET password = $1, salt = $2
+	WHERE id = $3
+`
+
+	_, err := r.db.ExecContext(ctx, query, password, salt, id)
 	if err != nil {
 		logrus.Error(err)
 		return err

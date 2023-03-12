@@ -9,11 +9,12 @@ import (
 	"time"
 )
 
-func NewJwt(id int, salt string, userType entities.UserType) (string, error) {
+func NewJwt(id int, salt string, userType entities.UserType, recovery bool) (string, error) {
 	claims := jwt.MapClaims{
-		"exp":      time.Now().Add(time.Hour * 24 * 7),
-		"id":       id,
-		"userType": userType,
+		"exp":         time.Now().Add(time.Hour * 24 * 7),
+		"id":          id,
+		"userType":    userType,
+		"ps-recovery": recovery,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(salt))

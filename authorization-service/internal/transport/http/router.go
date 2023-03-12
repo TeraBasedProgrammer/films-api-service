@@ -39,6 +39,12 @@ func (r *Router) SetUpRouts() http.Handler {
 		router.Post("/check", r.controllers.VerificationController.VerifyCode)
 	})
 
+	app.Route("/recover", func(router chi.Router) {
+		router.Post("/send", r.controllers.PasswordRecoveryController.SendRecoveryCode)
+		router.Post("/check", r.controllers.PasswordRecoveryController.VerifyRecoveryCode)
+		router.Post("/change", r.controllers.PasswordRecoveryController.UpdatePassword)
+	})
+
 	return app
 }
 

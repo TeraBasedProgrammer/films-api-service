@@ -2,6 +2,7 @@ package email_service
 
 import (
 	"bytes"
+	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -17,11 +18,31 @@ const (
 	Charset = "UTF-8"
 )
 
-func setUpMailBody(code int) (string, error) {
+type EmailType string
+
+const (
+	VerificationEmail EmailType = "verification"
+	PassRecoveryEmail EmailType = "recovery"
+)
+
+func setUpMailBody(code int, emailType EmailType) (string, error) {
 	buffer := bytes.NewBuffer([]byte{})
 
+	templateToParse := ""
+
+	switch emailType {
+	case VerificationEmail:
+		templateToParse = "verification_email.gohtml"
+		break
+	case PassRecoveryEmail:
+		templateToParse = "password_recovery_email.gohtml"
+		break
+	default:
+		return "", errors.New("no such template")
+	}
+
 	//parse template
-	data, err := template.ParseFiles("./templates/email.gohtml")
+	data, err := template.ParseFiles("./templates/" + templateToParse)
 	if err != nil {
 		logrus.Error("parse error", err.Error())
 		return "", err
@@ -35,8 +56,8 @@ func setUpMailBody(code int) (string, error) {
 	return buffer.String(), nil
 }
 
-func SendEmail(recipient string, code int) error {
-	body, err := setUpMailBody(code)
+func SendEmail(recipient string, code int, emailType EmailType) error {
+	body, err := setUpMailBody(code, emailType)
 	if err != nil {
 		logrus.Error("error parsing template", err)
 		return err

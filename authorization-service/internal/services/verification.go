@@ -34,7 +34,7 @@ func (s *VerificationService) SendCode(id int) error {
 	}
 
 	//send email
-	err = email_service.SendEmail(user.Email, user.VerificationCode)
+	err = email_service.SendEmail(user.Email, user.VerificationCode, email_service.VerificationEmail)
 	if err != nil && err.Error() == ses.ErrCodeMessageRejected {
 		return pkg.NewError("such email does not exist", http.StatusExpectationFailed)
 	}
