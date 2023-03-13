@@ -5,11 +5,12 @@ import (
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/core/repo/entities"
 	"github.com/golang-jwt/jwt"
 	"github.com/sirupsen/logrus"
+	"os"
 	"strconv"
 	"time"
 )
 
-func NewJwt(id int, salt string, userType entities.UserType, recovery bool) (string, error) {
+func NewJwt(id int, userType entities.UserType, recovery bool) (string, error) {
 	claims := jwt.MapClaims{
 		"exp":         time.Now().Add(time.Hour * 24 * 7),
 		"id":          id,
@@ -17,7 +18,7 @@ func NewJwt(id int, salt string, userType entities.UserType, recovery bool) (str
 		"ps-recovery": recovery,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(salt))
+	tokenString, err := token.SignedString([]byte(os.Getenv("SIGNATURE")))
 	if err != nil {
 		logrus.Info(err.Error())
 		return "", err
