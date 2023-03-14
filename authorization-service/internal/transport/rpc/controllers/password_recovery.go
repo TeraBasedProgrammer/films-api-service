@@ -4,6 +4,7 @@ import (
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/core/repo/entities"
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/pkg"
 	"github.com/sirupsen/logrus"
+	"net/http"
 )
 
 type PassRecoveryController struct {
@@ -36,7 +37,7 @@ type PassRecoveryResponse struct {
 	Jwt string
 }
 
-func (c *PassRecoveryController) SendRecoveryCode(email string) error {
+func (c *PassRecoveryController) SendRecoveryCode(email string, resp *int) error {
 	err := c.service.SendRecoveryCode(email)
 	if err != nil {
 		logrus.Error(err)
@@ -55,14 +56,14 @@ func (c *PassRecoveryController) VerifyRecoveryCode(code codePayload, resp *Pass
 	token, err := pkg.NewJwt(user.Id, user.UserType, true)
 	if err != nil {
 		logrus.Error(err)
-		return err
+		return pkg.NewError("error creating jwt", http.StatusInternalServerError)
 	}
 
 	resp.Jwt = token
 	return nil
 }
 
-func (c *PassRecoveryController) UpdatePassword(pass passwordPayload) error {
+func (c *PassRecoveryController) UpdatePassword(pass passwordPayload, resp *int) error {
 	err := c.service.UpdatePassword(pass.Id, pass.Password)
 	if err != nil {
 		logrus.Error(err)
