@@ -23,7 +23,7 @@ func NewVerificationController(service iVerificationService) *VerificationContro
 	}
 }
 
-func (c *VerificationController) SendCode(id int) error {
+func (c *VerificationController) SendCode(id int, resp *int) error {
 	err := c.verificationService.SendCode(id)
 	if err != nil {
 		logrus.Error(err)
@@ -33,7 +33,7 @@ func (c *VerificationController) SendCode(id int) error {
 	return nil
 }
 
-func (c *VerificationController) VerifyCode(payload verificationPayload, id int) error {
+func (c *VerificationController) VerifyCode(payload verificationPayload, id int, resp *int) error {
 	err := c.verificationService.VerifyCode(payload.Code, id)
 	if err != nil {
 		logrus.Error(err)

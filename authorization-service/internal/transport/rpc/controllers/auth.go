@@ -5,6 +5,7 @@ import (
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/pkg"
 	"github.com/go-playground/validator"
 	"github.com/sirupsen/logrus"
+	"net/http"
 )
 
 type SignInPayload struct {
@@ -47,8 +48,7 @@ func (c *AuthController) SignIn(payload SignInPayload, resp *AuthResponse) error
 	token, err := c.service.SignIn(user)
 	if err != nil {
 		logrus.Error(err.Error())
-		//rpc.Error(w, err.(pkg.Error).Error(), err.(pkg.Error).Code())
-		return nil
+		return err
 	}
 
 	resp.Jwt = token
@@ -66,12 +66,12 @@ func (c *AuthController) SignUp(payload SignUpPayload, result *AuthResponse) err
 	err := pkg.RegisterPasswordValidation(v)
 	if err != nil {
 		logrus.Error(err.Error())
-		return err
+		return pkg.NewError("validation registration error", http.StatusInternalServerError)
 	}
 	err = v.Struct(user)
 	if err != nil {
 		logrus.Info(err.Error())
-		return err
+		return pkg.NewError(err.Error(), http.StatusBadRequest)
 	}
 
 	token, err := c.service.SignUp(user)
