@@ -4,9 +4,9 @@ import (
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/core/database"
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/core/repo"
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/services"
-	"github.com/anton-uvarenko/cinema/authorization-service/internal/transport/http"
+	rpc2 "github.com/anton-uvarenko/cinema/authorization-service/internal/transport/rpc"
 	"github.com/sirupsen/logrus"
-	"log"
+	"net/http"
 )
 
 func main() {
@@ -14,12 +14,8 @@ func main() {
 	r := repo.NewRepo(db)
 
 	s := services.NewService(r)
-	c := http.NewControllers(s)
-	router := http.NewRouter(c)
 
-	handler := router.SetUpRouts()
-	server := http.InitHttpServer(handler)
+	rpc2.SetUpServerControllers(s)
 
-	logrus.Info("Running server on port 80")
-	log.Fatal(server.ListenAndServe())
+	logrus.Fatal(http.ListenAndServe(":5000", nil))
 }
