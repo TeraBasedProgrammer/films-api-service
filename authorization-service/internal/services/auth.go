@@ -6,6 +6,7 @@ import (
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/core/repo/entities"
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/pkg"
 	email_service "github.com/anton-uvarenko/cinema/authorization-service/internal/pkg/email-service"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 )
@@ -34,6 +35,8 @@ func (s *AuthService) SignIn(user *entities.User) (string, error) {
 	if err != nil {
 		return "", pkg.NewError(err.Error(), http.StatusInternalServerError)
 	}
+
+	logrus.Info(dbUser)
 
 	//verify password
 	isVerified := password.Verify(user.Password, dbUser.Salt, dbUser.Password, nil)

@@ -48,11 +48,12 @@ func (c *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 	err = c.client.Call("AuthController.SignIn", payload, &resp)
 	if err != nil {
 		logrus.Error(err)
-		//fail := err.(pkg.Error)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		fail := pkg.CustToPkgError(err.Error())
+		http.Error(w, fail.Error(), fail.Code())
 		return
 	}
 
+	w.Header().Add("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(&resp)
 	if err != nil {
 		http.Error(w, "error encoding response", http.StatusInternalServerError)
@@ -75,6 +76,7 @@ func (c *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Add("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(&resp)
 	if err != nil {
 		http.Error(w, "error encoding response", http.StatusInternalServerError)

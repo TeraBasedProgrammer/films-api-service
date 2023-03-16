@@ -39,7 +39,6 @@ type SignUpPayload struct {
 }
 
 func (c *AuthController) SignIn(payload SignInPayload, resp *AuthResponse) error {
-
 	user := &entities.User{
 		Email:    payload.Email,
 		Password: payload.Password,
@@ -47,8 +46,8 @@ func (c *AuthController) SignIn(payload SignInPayload, resp *AuthResponse) error
 
 	token, err := c.service.SignIn(user)
 	if err != nil {
-		logrus.Error(err.Error())
-		return err
+		fail := err.(pkg.Error)
+		return pkg.NewRpcError(fail.Error(), fail.Code())
 	}
 
 	resp.Jwt = token
@@ -66,18 +65,20 @@ func (c *AuthController) SignUp(payload SignUpPayload, result *AuthResponse) err
 	err := pkg.RegisterPasswordValidation(v)
 	if err != nil {
 		logrus.Error(err.Error())
-		return pkg.NewError("validation registration error", http.StatusInternalServerError)
+
+		return pkg.NewRpcError("validation registration error", http.StatusInternalServerError)
 	}
 	err = v.Struct(user)
 	if err != nil {
 		logrus.Info(err.Error())
-		return pkg.NewError(err.Error(), http.StatusBadRequest)
+		return pkg.NewRpcError(err.Error(), http.StatusBadRequest)
 	}
 
 	token, err := c.service.SignUp(user)
 	if err != nil {
 		logrus.Error(err)
-		return err
+		fail := err.(pkg.Error)
+		return pkg.NewRpcError(fail.Error(), fail.Code())
 	}
 
 	result.Jwt = token

@@ -122,7 +122,9 @@ func (r *UserRepo) GetUserByEmail(email string) (*User, error) {
 	    avatar_name, 
 	    username, 
 	    email, 
-		password_recovery_code
+		password_recovery_code,
+		password,
+		salt
 	FROM USERS
 	WHERE email = $1
 `

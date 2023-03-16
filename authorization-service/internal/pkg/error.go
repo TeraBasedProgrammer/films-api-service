@@ -1,5 +1,10 @@
 package pkg
 
+import (
+	"errors"
+	"fmt"
+)
+
 type Error struct {
 	text     string
 	httpCode int
@@ -18,4 +23,8 @@ func NewError(message string, code int) Error {
 		text:     message,
 		httpCode: code,
 	}
+}
+
+func NewRpcError(msg string, code int) error {
+	return errors.New(fmt.Sprintf("%s; %d", msg, code))
 }
