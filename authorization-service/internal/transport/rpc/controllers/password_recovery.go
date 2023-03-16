@@ -23,12 +23,12 @@ func NewPassRecoveryController(service iPassRecoveryService) *PassRecoveryContro
 	}
 }
 
-type codePayload struct {
+type CodePayload struct {
 	Code  int    `json:"code"`
 	Email string `json:"email"`
 }
 
-type passwordPayload struct {
+type PasswordPayload struct {
 	Id       int
 	Password string `json:"password"`
 }
@@ -47,7 +47,7 @@ func (c *PassRecoveryController) SendRecoveryCode(email string, resp *int) error
 	return nil
 }
 
-func (c *PassRecoveryController) VerifyRecoveryCode(code codePayload, resp *PassRecoveryResponse) error {
+func (c *PassRecoveryController) VerifyRecoveryCode(code CodePayload, resp *PassRecoveryResponse) error {
 	user, err := c.service.Verify(code.Email, code.Code)
 	if err != nil {
 		logrus.Error(err)
@@ -65,7 +65,7 @@ func (c *PassRecoveryController) VerifyRecoveryCode(code codePayload, resp *Pass
 	return nil
 }
 
-func (c *PassRecoveryController) UpdatePassword(pass passwordPayload, resp *int) error {
+func (c *PassRecoveryController) UpdatePassword(pass PasswordPayload, resp *int) error {
 	err := c.service.UpdatePassword(pass.Id, pass.Password)
 	if err != nil {
 		logrus.Error(err)

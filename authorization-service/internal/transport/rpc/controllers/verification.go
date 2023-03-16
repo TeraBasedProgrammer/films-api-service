@@ -5,7 +5,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type verificationPayload struct {
+type VerificationPayload struct {
+	Id   int
 	Code int `json:"code"`
 }
 
@@ -35,8 +36,8 @@ func (c *VerificationController) SendCode(id int, resp *int) error {
 	return nil
 }
 
-func (c *VerificationController) VerifyCode(payload verificationPayload, id int, resp *int) error {
-	err := c.verificationService.VerifyCode(payload.Code, id)
+func (c *VerificationController) VerifyCode(payload VerificationPayload, resp *int) error {
+	err := c.verificationService.VerifyCode(payload.Code, payload.Id)
 	if err != nil {
 		logrus.Error(err)
 		fail := err.(pkg.Error)

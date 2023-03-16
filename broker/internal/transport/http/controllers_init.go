@@ -6,11 +6,15 @@ import (
 )
 
 type Controllers struct {
-	AuthController *controllers.AuthController
+	AuthController         *controllers.AuthController
+	VerificationController *controllers.VerificationController
+	PassRecoveryController *controllers.PassRecoveryController
 }
 
 func NewControllers(client *rpc.Client) *Controllers {
 	return &Controllers{
-		AuthController: controllers.NewAuthController(client),
+		AuthController:         controllers.NewAuthController(client),
+		VerificationController: controllers.NewVerificationController(client),
+		PassRecoveryController: controllers.NewPassRecoveryController(client),
 	}
 }

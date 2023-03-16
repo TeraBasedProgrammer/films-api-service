@@ -31,6 +31,17 @@ func (r *Router) InitRoutes() http.Handler {
 		router.Post("/signup", r.controllers.AuthController.SignUp)
 	})
 
+	app.Route("/verify", func(router chi.Router) {
+		router.Get("/send", r.controllers.VerificationController.SendCode)
+		router.Post("/check", r.controllers.VerificationController.VerifyCode)
+	})
+
+	app.Route("/recover", func(router chi.Router) {
+		router.Post("/send", r.controllers.PassRecoveryController.SendCode)
+		router.Post("/check", r.controllers.PassRecoveryController.VerifyCode)
+		router.Post("/change", r.controllers.PassRecoveryController.UpdatePassword)
+	})
+
 	return app
 }
 

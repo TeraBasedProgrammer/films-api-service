@@ -38,7 +38,7 @@ func (c *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		logrus.Info(err)
-		http.Error(w, err.Error(), http.StatusBadGateway)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -71,7 +71,7 @@ func (c *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
 	resp := AuthResponse{}
 	err = c.client.Call("AuthController.SignUp", payload, &resp)
 	if err != nil {
-		fail := err.(pkg.Error)
+		fail := pkg.CustToPkgError(err.Error())
 		http.Error(w, fail.Error(), fail.Code())
 		return
 	}
