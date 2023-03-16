@@ -63,18 +63,33 @@ func SendEmail(recipient string, code int, emailType EmailType) error {
 		return err
 	}
 
-	sess, err := session.NewSession(&aws.Config{
-		CredentialsChainVerboseErrors: aws.Bool(true),
-		Region:                        aws.String("eu-central-1"),
-		Credentials: credentials.NewStaticCredentials(
-			os.Getenv("AWS_ACCESS_KEY_ID"),
-			os.Getenv("AWS_SECRET_ACCESS_KEY"),
-			"",
-		),
-	})
-	if err != nil {
-		logrus.Error(err)
-		return err
+	//setup session
+	var sess *session.Session
+	if len(os.Getenv("AWS_ACCESS_KEY_ID")) != 0 && len(os.Getenv("AWS_SECRET_ACCESS_KEY")) != 0 {
+		//if credentials were provided as env variables than use them
+		sess, err = session.NewSession(&aws.Config{
+			CredentialsChainVerboseErrors: aws.Bool(true),
+			Region:                        aws.String(os.Getenv("AWS_REGION")),
+			Credentials: credentials.NewStaticCredentials(
+				os.Getenv("AWS_ACCESS_KEY_ID"),
+				os.Getenv("AWS_SECRET_ACCESS_KEY"),
+				"",
+			),
+		})
+		if err != nil {
+			logrus.Error(err)
+			return err
+		}
+	} else {
+		//if no credentials were provided than sdk will handle it
+		sess, err = session.NewSession(&aws.Config{
+			CredentialsChainVerboseErrors: aws.Bool(true),
+			Region:                        aws.String(os.Getenv("AWS_REGION")),
+		})
+		if err != nil {
+			logrus.Error(err)
+			return err
+		}
 	}
 
 	svs := ses.New(sess)
