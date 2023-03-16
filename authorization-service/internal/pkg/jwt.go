@@ -12,7 +12,7 @@ import (
 
 func NewJwt(id int, userType entities.UserType, recovery bool) (string, error) {
 	claims := jwt.MapClaims{
-		"exp":         time.Now().Add(time.Hour * 24 * 7),
+		"exp":         time.Now().Add(time.Hour * 24 * 7).Unix(),
 		"id":          id,
 		"userType":    userType,
 		"ps-recovery": recovery,

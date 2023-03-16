@@ -1,6 +1,8 @@
 package http
 
 import (
+	"github.com/anton-uvarenko/cinema/broker-service/internal/core"
+	md "github.com/anton-uvarenko/cinema/broker-service/internal/pkg/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"net/http"
@@ -39,7 +41,19 @@ func (r *Router) InitRoutes() http.Handler {
 	app.Route("/recover", func(router chi.Router) {
 		router.Post("/send", r.controllers.PassRecoveryController.SendCode)
 		router.Post("/check", r.controllers.PassRecoveryController.VerifyCode)
-		router.Post("/change", r.controllers.PassRecoveryController.UpdatePassword)
+
+		router.Group(func(rout chi.Router) {
+			mid := md.AuthMiddleware{
+				Recovery: true,
+				UserType: []core.UserType{
+					core.Premium,
+					core.Basic,
+					core.Admin,
+				},
+			}
+			rout.Use(mid.TokenVerify)
+			rout.Post("/change", r.controllers.PassRecoveryController.UpdatePassword)
+		})
 	})
 
 	return app

@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/anton-uvarenko/cinema/broker-service/internal/pkg"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"net/rpc"
 	"strings"
@@ -64,6 +65,7 @@ func (c *PassRecoveryController) VerifyCode(w http.ResponseWriter, r *http.Reque
 	resp := PassRecoveryResponse{}
 	err = c.client.Call("PassRecoveryController.VerifyRecoveryCode", payload, &resp)
 	if err != nil {
+		logrus.Error(err)
 		fail := pkg.CustToPkgError(err.Error())
 		http.Error(w, fail.Error(), fail.Code())
 		return
