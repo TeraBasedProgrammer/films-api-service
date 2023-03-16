@@ -36,7 +36,8 @@ func (s *AuthService) SignIn(user *entities.User) (string, error) {
 		return "", pkg.NewError(err.Error(), http.StatusInternalServerError)
 	}
 
-	logrus.Info(dbUser)
+	logrus.Info("Password: ", dbUser.Password)
+	logrus.Info("Salt", dbUser.Salt)
 
 	//verify password
 	isVerified := password.Verify(user.Password, dbUser.Salt, dbUser.Password, nil)

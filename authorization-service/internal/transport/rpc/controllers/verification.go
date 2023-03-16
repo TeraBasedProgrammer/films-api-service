@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/anton-uvarenko/cinema/authorization-service/internal/pkg"
 	"github.com/sirupsen/logrus"
 )
 
@@ -27,7 +28,8 @@ func (c *VerificationController) SendCode(id int, resp *int) error {
 	err := c.verificationService.SendCode(id)
 	if err != nil {
 		logrus.Error(err)
-		return err
+		fail := err.(pkg.Error)
+		return pkg.NewRpcError(fail.Error(), fail.Code())
 	}
 
 	return nil
@@ -37,7 +39,8 @@ func (c *VerificationController) VerifyCode(payload verificationPayload, id int,
 	err := c.verificationService.VerifyCode(payload.Code, id)
 	if err != nil {
 		logrus.Error(err)
-		return err
+		fail := err.(pkg.Error)
+		return pkg.NewRpcError(fail.Error(), fail.Code())
 	}
 
 	return nil
