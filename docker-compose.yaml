@@ -14,6 +14,8 @@ services:
       - "8080:80"
     networks:
       - local
+    depends_on:
+      - authorization
 
   authorization:
     container_name: auth

@@ -2,19 +2,17 @@ package main
 
 import (
 	"github.com/anton-uvarenko/cinema/broker-service/internal/transport/http"
-	"github.com/sirupsen/logrus"
+	rpc2 "github.com/anton-uvarenko/cinema/broker-service/internal/transport/rpc"
 	"log"
 	"net/rpc"
 )
 
 func main() {
-	client, err := rpc.DialHTTP("tcp", "auth:5000")
-	if err != nil {
-		logrus.Error(err)
-		log.Fatal(err)
-	}
+	client := make(chan *rpc.Client)
 
-	c := http.NewControllers(client)
+	go rpc2.ConnectServer(client, "auth", "5000")
+
+	c := http.NewControllers(<-client)
 	r := http.NewRouter(c)
 
 	handler := r.InitRoutes()
