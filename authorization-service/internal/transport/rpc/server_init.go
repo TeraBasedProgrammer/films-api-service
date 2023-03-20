@@ -10,5 +10,5 @@ func SetUpServerControllers(services *services.Service) {
 	_ = rpc.Register(controllers.NewAuthController(services.AuthService))
 	_ = rpc.Register(controllers.NewVerificationController(services.VerificationService))
 	_ = rpc.Register(controllers.NewPassRecoveryController(services.PasswordRecoveryService))
-	rpc.HandleHTTP()
+	//rpc.HandleHTTP()
 }
