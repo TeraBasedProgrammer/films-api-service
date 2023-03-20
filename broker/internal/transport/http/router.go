@@ -27,6 +27,7 @@ func (r *Router) InitRoutes() http.Handler {
 	app := chi.NewRouter()
 	app.Use(middleware.Recoverer)
 	app.Use(middleware.Logger)
+	app.Use(middleware.Heartbeat("/ping"))
 
 	app.Route("/auth", func(router chi.Router) {
 		router.Post("/signin", r.controllers.AuthController.SignIn)
