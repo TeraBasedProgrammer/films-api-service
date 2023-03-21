@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 if [ "$DATABASE" = "postgres" ]
 then
@@ -12,6 +12,7 @@ then
 fi
 
 python manage.py flush --no-input
+python manage.py makemigrations
 python manage.py migrate
 
 exec "$@"
