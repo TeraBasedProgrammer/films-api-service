@@ -3,21 +3,40 @@ from django.db import models
 
 class Film(models.Model):
 
-    # Добавить базовую валидацию полей
+    # Add model validations
 
+    # Validation: text validation
     title = models.CharField(max_length=50)
+
+    # Validation: text validation
     poster_name = models.CharField(max_length=100)
-    rating = models.DecimalField(max_digits=4, decimal_places=2)
-    country = models.CharField(max_length=50)
-    release_date = models.DateField()
-    director = models.CharField(max_length=50)
-    description = models.TextField()
-    age_restriction = models.IntegerField()
-    studio = models.CharField(max_length=50)
     
-    # imdb_film_id - cделать write_only field в сериализаторе, запрашивать fild + валидация на 'tt' в начале
-    # imdb_rating  - cделать дополнительным полем в сериализаторе (парсить json-ответ от imdb)
-    # actors - дополнительное поле в сериализаторе (делать запрос на сторонний API)
+    # Validation: should be from 0.00 to 10.00 ✅
+    rating = models.DecimalField(max_digits=4, decimal_places=2)
+
+    # Validation: validated in serializer ✅
+    imdb_rating = models.DecimalField(max_digits=4, decimal_places=2, editable=False)
+    
+    # Validation: text validation
+    country = models.CharField(max_length=50)
+
+    # Validation: text validation
+    release_date = models.DateField()
+
+    # Validation: text validation
+    director = models.CharField(max_length=50)
+
+    # Validation: text validation
+    description = models.TextField()
+
+    # Validation: should be from 0 to 21
+    age_restriction = models.IntegerField()
+
+    # Validation: text validation
+    studio = models.CharField(max_length=50)
+
+    
+    
 
 
 class Screenshot(models.Model):
