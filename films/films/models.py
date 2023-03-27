@@ -37,4 +37,6 @@ class Film(models.Model):
     
 class Screenshot(models.Model):
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name='screenshots')
+    
+    # Validation: text validation
     name = models.CharField(max_length=100)

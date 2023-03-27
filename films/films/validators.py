@@ -18,7 +18,7 @@ def validate_imdb_id(value):
     
 
 def validate_rating(value):
-    if value < 0.00 or value > 10.00:
+    if not 0.00 <= value <= 10.00:
         raise ValidationError('Rating must be from 0.00 to 10.00')
     return value
 
