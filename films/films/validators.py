@@ -1,9 +1,10 @@
-import requests
 import requests_cache
 import os
 import json
+import re
 
 from rest_framework.serializers import ValidationError
+from django.core.validators import RegexValidator
 
 
 def validate_imdb_id(value):
@@ -11,9 +12,12 @@ def validate_imdb_id(value):
         raise ValidationError('Imdb film id must start with "tt"')
     
     session = requests_cache.CachedSession(cache_name=f'{os.path.dirname(__file__)}/cache/imdb-cache', backend='sqlite', expire_after=600)
-    response = json.loads((session.get('https://imdb-api.com/en/API/Ratings/k_92xc2azh/%s' % value).content.decode('utf-8')))
-    if response['errorMessage']:
-        raise ValidationError('Invalid ImDb film id')
+    try:
+        response = json.loads((session.get('https://imdb-api.com/en/API/Ratings/k_92xc2azh/%s' % value).content.decode('utf-8')))
+        if response['errorMessage']:
+            raise ValidationError('Invalid ImDb film id')
+    except ConnectionError as e:
+        raise ValidationError(e.message)
     return value
     
 
@@ -27,3 +31,16 @@ def validate_age_restriction(value):
     if not 0 <= value <= 21:
         raise ValidationError('Age restriction must be from 0 to 21')
     return value
+
+
+def validate_text(value):
+    language_validator = RegexValidator(
+        # regex = r'^(?!.*[:?!\-+().,"ʼ=№#&.,!]{2})(?!.*  )[A-Za-z0-9А-Яа-яЇїІіЄєҐґ:?!\-+().",ʼ=№#& ]+$',
+        regex = r'^[A-Za-z0-9А-Яа-яЇїІіЄєҐґ:?!\-\+\(\)\.,ʼ=№#& ]+$', 
+        message='Text format is not allowed',
+    )
+    
+    try:
+        language_validator(value)
+    except ValidationError as e:
+        raise ValidationError(e.message, code='invalid_text')

@@ -9,7 +9,6 @@ class Film(models.Model):
     # Validation: text validation
     title = models.CharField(max_length=50)
 
-    # Validation: text validation
     poster_name = models.CharField(max_length=100)
     
     rating = models.DecimalField(max_digits=4, decimal_places=2)
@@ -37,6 +36,4 @@ class Film(models.Model):
     
 class Screenshot(models.Model):
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name='screenshots')
-    
-    # Validation: text validation
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100) 

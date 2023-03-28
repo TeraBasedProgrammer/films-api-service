@@ -6,7 +6,7 @@ import requests_cache
 import json
 import os
 
-from .validators import validate_imdb_id, validate_rating, validate_age_restriction
+from .validators import validate_imdb_id, validate_rating, validate_age_restriction, validate_text
 
 
 class ScreenshotSerializer(serializers.ModelSerializer):
@@ -18,7 +18,13 @@ class ScreenshotSerializer(serializers.ModelSerializer):
 
 
 class FilmSerializer(serializers.ModelSerializer):
-    screenshots = ScreenshotSerializer(many=True)
+    # screenshots = ScreenshotSerializer(many=True)
+    
+    title = serializers.CharField(validators=[validate_text])
+    country = serializers.CharField(validators=[validate_text])
+    director = serializers.CharField(validators=[validate_text])
+    description = serializers.CharField(validators=[validate_text]) 
+    studio = serializers.CharField(validators=[validate_text])
     
     imdb_id = serializers.CharField(write_only=True, validators=[validate_imdb_id])
     rating = serializers.DecimalField(max_digits=4, decimal_places=2, validators=[validate_rating])
@@ -40,7 +46,7 @@ class FilmSerializer(serializers.ModelSerializer):
             'studio',
             'imdb_id',
             'imdb_rating',
-            'screenshots',
+            # 'screenshots',
         ] 
 
         
@@ -51,11 +57,11 @@ class FilmSerializer(serializers.ModelSerializer):
         validated_data['imdb_rating'] = response['imDb']
 
         # Retrieving screenshots
-        screenshots_data = validated_data.pop('screenshots')
+        # screenshots_data = validated_data.pop('screenshots')
         film = Film.objects.create(**validated_data)
-        for screenshot_data in screenshots_data:
-            Screenshot.objects.create(film=film, **screenshot_data)
-            
+        # for screenshot_data in screenshots_data:
+        #     Screenshot.objects.create(film=film, **screenshot_data)
+
         return film
             
 
