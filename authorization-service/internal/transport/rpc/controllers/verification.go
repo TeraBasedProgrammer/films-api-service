@@ -1,16 +1,14 @@
 package controllers
 
 import (
+	"context"
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/pkg"
+	"github.com/anton-uvarenko/cinema/authorization-service/protobufs/auth"
 	"github.com/sirupsen/logrus"
 )
 
-type VerificationPayload struct {
-	Id   int
-	Code int `json:"code"`
-}
-
 type VerificationController struct {
+	auth.UnimplementedVerificationServer
 	verificationService iVerificationService
 }
 
@@ -25,24 +23,25 @@ func NewVerificationController(service iVerificationService) *VerificationContro
 	}
 }
 
-func (c *VerificationController) SendCode(id int, resp *int) error {
-	err := c.verificationService.SendCode(id)
+func (c *VerificationController) SendCode(ctx context.Context, id *auth.IdPayload) (*auth.Empty, error) {
+	logrus.Info("id is ", id.Id)
+	err := c.verificationService.SendCode(int(id.Id))
 	if err != nil {
 		logrus.Error(err)
 		fail := err.(pkg.Error)
-		return pkg.NewRpcError(fail.Error(), fail.Code())
+		return nil, pkg.NewRpcError(fail.Error(), fail.Code())
 	}
 
-	return nil
+	return &auth.Empty{}, nil
 }
 
-func (c *VerificationController) VerifyCode(payload VerificationPayload, resp *int) error {
-	err := c.verificationService.VerifyCode(payload.Code, payload.Id)
+func (c *VerificationController) VerifyCode(ctx context.Context, payload *auth.VerificationPayload) (*auth.Empty, error) {
+	err := c.verificationService.VerifyCode(int(payload.Code), int(payload.Id))
 	if err != nil {
 		logrus.Error(err)
 		fail := err.(pkg.Error)
-		return pkg.NewRpcError(fail.Error(), fail.Code())
+		return nil, pkg.NewRpcError(fail.Error(), fail.Code())
 	}
 
-	return nil
+	return &auth.Empty{}, nil
 }

@@ -24,6 +24,8 @@ func NewJwt(id int, userType entities.UserType, recovery bool) (string, error) {
 		return "", err
 	}
 
+	logrus.Info("id is ", claims["id"])
+
 	return tokenString, nil
 }
 

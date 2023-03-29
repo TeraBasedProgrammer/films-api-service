@@ -1,19 +1,17 @@
 package controllers
 
 import (
+	"context"
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/core/repo/entities"
 	"github.com/anton-uvarenko/cinema/authorization-service/internal/pkg"
+	"github.com/anton-uvarenko/cinema/authorization-service/protobufs/auth"
 	"github.com/go-playground/validator"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
-type SignInPayload struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 type AuthController struct {
+	auth.UnimplementedAuthServer
 	service iAuthService
 }
 
@@ -28,17 +26,7 @@ type iAuthService interface {
 	SignUp(user *entities.User) (string, error)
 }
 
-type AuthResponse struct {
-	Jwt string
-}
-
-type SignUpPayload struct {
-	Username string
-	Email    string
-	Password string
-}
-
-func (c *AuthController) SignIn(payload SignInPayload, resp *AuthResponse) error {
+func (c *AuthController) SignIn(ctx context.Context, payload *auth.SignInPayload) (*auth.JwtResponse, error) {
 	user := &entities.User{
 		Email:    payload.Email,
 		Password: payload.Password,
@@ -47,14 +35,15 @@ func (c *AuthController) SignIn(payload SignInPayload, resp *AuthResponse) error
 	token, err := c.service.SignIn(user)
 	if err != nil {
 		fail := err.(pkg.Error)
-		return pkg.NewRpcError(fail.Error(), fail.Code())
+		return nil, pkg.NewRpcError(fail.Error(), fail.Code())
 	}
 
-	resp.Jwt = token
-	return nil
+	return &auth.JwtResponse{
+		Jwt: token,
+	}, nil
 }
 
-func (c *AuthController) SignUp(payload SignUpPayload, result *AuthResponse) error {
+func (c *AuthController) SignUp(ctx context.Context, payload *auth.SignUpPayload) (*auth.JwtResponse, error) {
 	user := &entities.User{
 		Email:    payload.Email,
 		Username: payload.Username,
@@ -65,22 +54,23 @@ func (c *AuthController) SignUp(payload SignUpPayload, result *AuthResponse) err
 	err := pkg.RegisterPasswordValidation(v)
 	if err != nil {
 		logrus.Error(err.Error())
+		return nil, pkg.NewRpcError("validation registration error", http.StatusInternalServerError)
 
-		return pkg.NewRpcError("validation registration error", http.StatusInternalServerError)
 	}
 	err = v.Struct(user)
 	if err != nil {
 		logrus.Info(err.Error())
-		return pkg.NewRpcError(err.Error(), http.StatusBadRequest)
+		return nil, pkg.NewRpcError(err.Error(), http.StatusBadRequest)
 	}
 
 	token, err := c.service.SignUp(user)
 	if err != nil {
 		logrus.Error(err)
 		fail := err.(pkg.Error)
-		return pkg.NewRpcError(fail.Error(), fail.Code())
+		return nil, pkg.NewRpcError(fail.Error(), fail.Code())
 	}
 
-	result.Jwt = token
-	return nil
+	return &auth.JwtResponse{
+		Jwt: token,
+	}, nil
 }
