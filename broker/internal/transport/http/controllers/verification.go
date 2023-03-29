@@ -3,38 +3,46 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/anton-uvarenko/cinema/broker-service/internal/pkg"
+	"github.com/anton-uvarenko/cinema/broker-service/protobufs/auth"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/net/context"
 	"net/http"
-	"net/rpc"
 	"strings"
+	"time"
 )
 
 type VerificationController struct {
-	client *rpc.Client
+	client auth.VerificationClient
 }
 
-func NewVerificationController(client *rpc.Client) *VerificationController {
+func NewVerificationController(client auth.VerificationClient) *VerificationController {
 	return &VerificationController{
 		client: client,
 	}
 }
 
-type VerificationPayload struct {
-	Id   int `json:"-"`
-	Code int `json:"code"`
-}
-
 func (c *VerificationController) SendCode(w http.ResponseWriter, r *http.Request) {
 	token := strings.Split(r.Header.Get("Authorization"), " ")[1]
+	logrus.Info(token)
+
 	id, err := pkg.ParseWithId(token)
 	if err != nil {
 		http.Error(w, "error parsing jwt", http.StatusInternalServerError)
 	}
 
-	var resp int
-	err = c.client.Call("VerificationController.SendCode", id, &resp)
+	logrus.Info(id)
+
+	payload := auth.IdPayload{
+		Id: int32(id),
+	}
+
+	logrus.Info(payload)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	_, err = c.client.SendCode(ctx, &payload)
 	if err != nil {
-		logrus.Error(err)
 		fail := pkg.CustToPkgError(err.Error())
 		http.Error(w, fail.Error(), fail.Code())
 		return
@@ -42,7 +50,7 @@ func (c *VerificationController) SendCode(w http.ResponseWriter, r *http.Request
 }
 
 func (c *VerificationController) VerifyCode(w http.ResponseWriter, r *http.Request) {
-	payload := VerificationPayload{}
+	payload := auth.VerificationPayload{}
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -55,10 +63,12 @@ func (c *VerificationController) VerifyCode(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "error parsing jwt", http.StatusInternalServerError)
 	}
 
-	payload.Id = id
+	payload.Id = int32(id)
 
-	var resp int
-	err = c.client.Call("VerificationController.VerifyCode", payload, &resp)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	_, err = c.client.VerifyCode(ctx, &payload)
 	if err != nil {
 		fail := pkg.CustToPkgError(err.Error())
 		http.Error(w, fail.Error(), fail.Code())

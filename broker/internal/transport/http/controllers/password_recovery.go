@@ -1,52 +1,37 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/anton-uvarenko/cinema/broker-service/internal/pkg"
-	"github.com/sirupsen/logrus"
+	"github.com/anton-uvarenko/cinema/broker-service/protobufs/auth"
 	"net/http"
-	"net/rpc"
 	"strings"
+	"time"
 )
 
 type PassRecoveryController struct {
-	client *rpc.Client
+	client auth.PassVerifyClient
 }
 
-func NewPassRecoveryController(client *rpc.Client) *PassRecoveryController {
+func NewPassRecoveryController(client auth.PassVerifyClient) *PassRecoveryController {
 	return &PassRecoveryController{
 		client: client,
 	}
 }
 
-type EmailPayload struct {
-	Email string `json:"email"`
-}
-
-type CodePayload struct {
-	Email string `json:"email"`
-	Code  int    `json:"code"`
-}
-
-type PassRecoveryResponse struct {
-	Jwt string `json:"jwt"`
-}
-
-type PasswordPayload struct {
-	Id       int
-	Password string `json:"password"`
-}
-
 func (c *PassRecoveryController) SendCode(w http.ResponseWriter, r *http.Request) {
-	payload := EmailPayload{}
+	payload := auth.EmailPayload{}
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	var resp int
-	err = c.client.Call("PassRecoveryController.SendRecoveryCode", payload.Email, &resp)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	_, err = c.client.SendRecoveryCode(ctx, &payload)
 	if err != nil {
 		fail := pkg.CustToPkgError(err.Error())
 		http.Error(w, fail.Error(), fail.Code())
@@ -55,17 +40,18 @@ func (c *PassRecoveryController) SendCode(w http.ResponseWriter, r *http.Request
 }
 
 func (c *PassRecoveryController) VerifyCode(w http.ResponseWriter, r *http.Request) {
-	payload := CodePayload{}
+	payload := auth.CodePayload{}
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	resp := PassRecoveryResponse{}
-	err = c.client.Call("PassRecoveryController.VerifyRecoveryCode", payload, &resp)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	resp, err := c.client.VerifyRecoveryCode(ctx, &payload)
 	if err != nil {
-		logrus.Error(err)
 		fail := pkg.CustToPkgError(err.Error())
 		http.Error(w, fail.Error(), fail.Code())
 		return
@@ -80,7 +66,7 @@ func (c *PassRecoveryController) VerifyCode(w http.ResponseWriter, r *http.Reque
 }
 
 func (c *PassRecoveryController) UpdatePassword(w http.ResponseWriter, r *http.Request) {
-	payload := PasswordPayload{}
+	payload := auth.PasswordPayload{}
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -94,10 +80,12 @@ func (c *PassRecoveryController) UpdatePassword(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	payload.Id = id
+	payload.Id = int32(id)
 
-	var resp int
-	err = c.client.Call("PassRecoveryController.UpdatePassword", payload, &resp)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	_, err = c.client.UpdatePassword(ctx, &payload)
 	if err != nil {
 		fail := pkg.CustToPkgError(err.Error())
 		http.Error(w, fail.Error(), fail.Code())

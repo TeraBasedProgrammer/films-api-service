@@ -27,6 +27,14 @@ func NewError(err string, code int) Error {
 
 func CustToPkgError(err string) Error {
 	parts := strings.Split(err, "; ")
+
+	if len(parts) == 1 {
+		return Error{
+			text: parts[0],
+			code: 500,
+		}
+	}
+
 	code, _ := strconv.Atoi(parts[1])
 
 	return Error{

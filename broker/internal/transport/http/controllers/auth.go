@@ -1,18 +1,20 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/anton-uvarenko/cinema/broker-service/internal/pkg"
+	"github.com/anton-uvarenko/cinema/broker-service/protobufs/auth"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"net/rpc"
+	"time"
 )
 
 type AuthController struct {
-	client *rpc.Client
+	client auth.AuthClient
 }
 
-func NewAuthController(client *rpc.Client) *AuthController {
+func NewAuthController(client auth.AuthClient) *AuthController {
 	return &AuthController{
 		client: client,
 	}
@@ -34,7 +36,7 @@ type AuthResponse struct {
 }
 
 func (c *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
-	payload := SignInPayload{}
+	payload := auth.SignInPayload{}
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		logrus.Info(err)
@@ -42,12 +44,10 @@ func (c *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logrus.Info(payload)
-
-	resp := AuthResponse{}
-	err = c.client.Call("AuthController.SignIn", payload, &resp)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	resp, err := c.client.SignIn(ctx, &payload)
 	if err != nil {
-		logrus.Error(err)
 		fail := pkg.CustToPkgError(err.Error())
 		http.Error(w, fail.Error(), fail.Code())
 		return
@@ -62,14 +62,15 @@ func (c *AuthController) SignIn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *AuthController) SignUp(w http.ResponseWriter, r *http.Request) {
-	payload := SignUpPayload{}
+	payload := auth.SignUpPayload{}
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
-	resp := AuthResponse{}
-	err = c.client.Call("AuthController.SignUp", payload, &resp)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	resp, err := c.client.SignUp(ctx, &payload)
 	if err != nil {
 		fail := pkg.CustToPkgError(err.Error())
 		http.Error(w, fail.Error(), fail.Code())

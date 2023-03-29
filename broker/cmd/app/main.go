@@ -1,18 +1,17 @@
 package main
 
 import (
+	"github.com/anton-uvarenko/cinema/broker-service/internal/transport/grpc"
 	"github.com/anton-uvarenko/cinema/broker-service/internal/transport/http"
-	rpc2 "github.com/anton-uvarenko/cinema/broker-service/internal/transport/rpc"
+	"github.com/sirupsen/logrus"
 	"log"
-	"net/rpc"
 )
 
 func main() {
-	client := make(chan *rpc.Client)
+	logrus.Info("connecting to auth")
+	clients := grpc.ConnectAuthServer()
 
-	go rpc2.ConnectServer(client, "auth", "5000")
-
-	c := http.NewControllers(<-client)
+	c := http.NewControllers(clients)
 	r := http.NewRouter(c)
 
 	handler := r.InitRoutes()
@@ -20,5 +19,4 @@ func main() {
 	server := http.InitHttpServer(handler)
 
 	log.Fatal(server.ListenAndServe())
-
 }
