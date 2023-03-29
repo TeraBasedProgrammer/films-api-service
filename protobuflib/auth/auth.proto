@@ -1,0 +1,21 @@
+syntax = "proto3";
+package auth;
+
+import "default-response.proto";
+option go_package = "github.com/anton-uvarenko/cinema/authorization-service/protobufs/auth";
+
+message SignUpPayload {
+  string Email = 1;
+  string Username = 2;
+  string Password = 3;
+}
+
+message SignInPayload {
+  string Email = 1;
+  string Password = 2;
+}
+
+service Auth {
+  rpc SignIn(SignInPayload) returns (JwtResponse);
+  rpc SignUp(SignUpPayload) returns (JwtResponse);
+}
