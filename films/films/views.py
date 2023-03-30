@@ -5,12 +5,18 @@ from django.shortcuts import get_object_or_404
 
 
 from .models import Film
-from .serializers import FilmSerializer
+from .serializers import FilmSerializer, FilmListSerializer
 
 
 class FilmListCreateView(generics.ListCreateAPIView):
     queryset = Film.objects.all()
-    serializer_class = FilmSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return FilmListSerializer
+        elif self.request.method == 'POST':
+            return FilmSerializer
+
 
 film_list_create = FilmListCreateView.as_view()
 

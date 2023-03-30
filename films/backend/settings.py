@@ -99,6 +99,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'films.CustomPageSizePagination.CustomPagination',
+    'DEFAULT_PAGINATION_CLASS': 'films.paginators.CustomPageSizePagination',
     'PAGE_SIZE': 10,
 }

@@ -17,6 +17,21 @@ class ScreenshotSerializer(serializers.ModelSerializer):
         ]
 
 
+class FilmListSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name='film_retrieve',
+        lookup_field='pk'
+    )
+
+    class Meta:
+        model = Film
+        fields = [
+            'title',
+            'poster_name',
+            'url',
+        ]
+
+
 class FilmSerializer(serializers.ModelSerializer):
     # screenshots = ScreenshotSerializer(many=True)
     
