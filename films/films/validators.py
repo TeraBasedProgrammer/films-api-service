@@ -1,7 +1,6 @@
 import requests_cache
 import os
 import json
-import re
 
 from rest_framework.serializers import ValidationError
 from django.core.validators import RegexValidator
@@ -36,7 +35,7 @@ def validate_age_restriction(value):
 def validate_text(value):
     language_validator = RegexValidator(
         # regex = r'^(?!.*[:?!\-+().,"ʼ=№#&.,!]{2})(?!.*  )[A-Za-z0-9А-Яа-яЇїІіЄєҐґ:?!\-+().",ʼ=№#& ]+$',
-        regex = r'^[A-Za-z0-9А-Яа-яЇїІіЄєҐґ:?!\-\+\(\)\.,ʼ=№#& ]+$', 
+        regex=r'^[A-Za-z0-9А-Яа-яЇїІіЄєҐґ:?!\-\+\(\)\.,ʼ=№#& ]+$',
         message='Text format is not allowed',
     )
     

@@ -30,7 +30,6 @@ class FilmSerializer(serializers.ModelSerializer):
     rating = serializers.DecimalField(max_digits=4, decimal_places=2, validators=[validate_rating])
     age_restriction = serializers.IntegerField(validators=[validate_age_restriction])
 
-
     class Meta:
         model = Film
         fields = [
@@ -49,7 +48,6 @@ class FilmSerializer(serializers.ModelSerializer):
             # 'screenshots',
         ] 
 
-        
     def create(self, validated_data):
         # Retrieving film imDb rating
         session = requests_cache.CachedSession(cache_name=f'{os.path.dirname(__file__)}/cache/imdb-cache', backend='sqlite', expire_after=600)
@@ -64,7 +62,6 @@ class FilmSerializer(serializers.ModelSerializer):
 
         return film
             
-
     # actors - дополнительное поле в сериализаторе (делать запрос на сторонний API)
 
 
