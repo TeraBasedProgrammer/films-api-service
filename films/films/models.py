@@ -1,8 +1,6 @@
 from django.db import models
 
 
-# Refactor: Add model validations
-
 class Film(models.Model):
     title = models.CharField(max_length=50)
     poster_name = models.CharField(max_length=100)
@@ -18,4 +16,4 @@ class Film(models.Model):
     
 class Screenshot(models.Model):
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name='screenshots')
-    name = models.CharField(max_length=100) 
+    name = models.CharField(max_length=100, blank=True, null=True)

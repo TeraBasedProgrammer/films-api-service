@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'films',
     'rest_framework',
+    'drf_extra_fields',
 ]
 
 MIDDLEWARE = [
@@ -95,10 +96,22 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Actual directory user files go to
+MEDIA_ROOT = 'media'
+
+# URL used to access the media
+MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'films.paginators.CustomPageSizePagination',
     'PAGE_SIZE': 10,
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+    ]
 }
+
+
