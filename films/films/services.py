@@ -1,9 +1,10 @@
 import os
-
 import boto3
 import requests_cache
 import json
+import pathlib
 
+from django.conf import settings
 from .models import Screenshot
 
 
@@ -21,21 +22,37 @@ def get_cached_imdb_response(validated_data) -> str:
 
 
 def initialize_screenshots(screenshots_data, film):
-    for screenshot_data in screenshots_data:
-        image = screenshot_data.pop('image')
-        print(image.name, image.file, image.field_name, image.content_type, image.size, image.charset, sep='\n')
-        Screenshot.objects.create(film=film, **screenshot_data)
+    for i, screenshot_data in enumerate(screenshots_data):
+        image_data = screenshot_data.pop('image')
 
-        # implement connection with s3 and data transfer
-        # aws_session = boto3.Session(
-        #     aws_access_key_id=os.environ.get('ACCESS_KEY'),
-        #     aws_secret_access_key=os.environ.get('SECRET_KEY'),
-        # )
-        # s3 = aws_session.client('s3')
-        # response = s3.list_buckets()
+        file_path = os.path.join(settings.MEDIA_ROOT, f'temp/{film.pk}/screenshot-{i+1}.{image_data.content_type.split("/")[1]}')
+        try:
+            os.mkdir(os.path.join(settings.MEDIA_ROOT, f'temp/{film.pk}'))
+        except FileExistsError:
+            pass
+        with open(file_path, 'wb') as f:
+            f.write(image_data.file.read())
+        Screenshot.objects.create(film=film, name=f'screenshot-{i}')
 
-        # Output the bucket names
-        # print('Existing buckets:')
-        # for bucket in response['Buckets']:
-        #     print(f'  {bucket["Name"]}')
+    # s3 files uploading
+    aws_session = boto3.Session(
+        aws_access_key_id=os.environ.get('ACCESS_KEY'),
+        aws_secret_access_key=os.environ.get('SECRET_KEY'),
+    )
+    s3 = aws_session.client('s3')
+    for file in pathlib.Path(f'{settings.MEDIA_ROOT}/temp/{film.pk}').iterdir():
+        s3.upload_file(file.absolute(), 'films-screenshots', f'{film.pk}/{file.name}')
+
+    for file in pathlib.Path(f'{settings.MEDIA_ROOT}/temp/{film.pk}').iterdir():
+        try:
+            os.remove(file.absolute())
+        except FileNotFoundError:
+            pass
+
+    try:
+        os.rmdir(f'{settings.MEDIA_ROOT}/temp/{film.pk}')
+    except FileNotFoundError:
+        pass
+
+
 
