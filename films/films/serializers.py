@@ -3,11 +3,11 @@ from drf_extra_fields.fields import Base64ImageField
 
 from .models import Film, Screenshot
 from .services import get_cached_imdb_response, initialize_screenshots
-from .validators import validate_imdb_id, validate_rating, validate_age_restriction, validate_text
+from .validators import validate_imdb_id, validate_rating, validate_age_restriction, validate_text, validate_image
 
 
 class ScreenshotSerializer(serializers.ModelSerializer):
-    image = Base64ImageField(write_only=True)
+    image = Base64ImageField(write_only=True, validators=[validate_image])
 
     # Should contain extracted filename from 'image' field
     name = serializers.CharField(read_only=True)
@@ -18,6 +18,11 @@ class ScreenshotSerializer(serializers.ModelSerializer):
             'name',
             'image',
         ]
+
+
+    def get_name(self, obj):
+        s3_link = ...
+
 
 
 class FilmListSerializer(serializers.ModelSerializer):

@@ -1,9 +1,11 @@
 import requests_cache
 import os
 import json
+import io
 
 from rest_framework.serializers import ValidationError
 from django.core.validators import RegexValidator
+from PIL import Image
 
 
 def validate_imdb_id(value):
@@ -34,7 +36,6 @@ def validate_age_restriction(value):
 
 def validate_text(value):
     language_validator = RegexValidator(
-        # regex = r'^(?!.*[:?!\-+().,"ʼ=№#&.,!]{2})(?!.*  )[A-Za-z0-9А-Яа-яЇїІіЄєҐґ:?!\-+().",ʼ=№#& ]+$',
         regex=r'^[A-Za-z0-9А-Яа-яЇїІіЄєҐґ:?!\-\+\(\)\.,ʼ=№#& ]+$',
         message='Text format is not allowed',
     )
@@ -43,3 +44,12 @@ def validate_text(value):
         language_validator(value)
     except ValidationError as e:
         raise ValidationError(e.message, code='invalid_text')
+
+
+def validate_image(value):
+    # Image size validation
+
+    size_mb = value.file.getbuffer().nbytes / (1024 * 1024)
+    if size_mb > 10:
+        raise ValidationError(f"File size must be under 10 MB")
+    return value
