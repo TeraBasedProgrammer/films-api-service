@@ -10,7 +10,7 @@ class ScreenshotSerializer(serializers.ModelSerializer):
     image = Base64ImageField(write_only=True, validators=[validate_image])
 
     # Should contain extracted filename from 'image' field
-    name = serializers.CharField(read_only=True)
+    name = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Screenshot
@@ -19,10 +19,10 @@ class ScreenshotSerializer(serializers.ModelSerializer):
             'image',
         ]
 
-
     def get_name(self, obj):
-        s3_link = ...
-
+        s3_link = f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.film.pk}/{obj.name}'
+        obj.name = s3_link
+        return obj.name
 
 
 class FilmListSerializer(serializers.ModelSerializer):
