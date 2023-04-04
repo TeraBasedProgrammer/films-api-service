@@ -10,19 +10,22 @@ class ScreenshotSerializer(serializers.ModelSerializer):
     image = Base64ImageField(write_only=True, validators=[validate_image])
 
     # Should contain extracted filename from 'image' field
-    name = serializers.SerializerMethodField(read_only=True)
+    file = serializers.SerializerMethodField(read_only=True)
+    compressed_file = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Screenshot
         fields = [
-            'name',
+            'file',
+            'compressed_file',
             'image',
         ]
 
-    def get_name(self, obj):
-        s3_link = f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.film.pk}/{obj.name}'
-        obj.name = s3_link
-        return obj.name
+    def get_file(self, obj):
+        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.film.pk}/{obj.file}'
+
+    def get_compressed_file(self, obj):
+        return f'https://films-compressed-screenshots.s3.eu-central-1.amazonaws.com/{obj.film.pk}/{obj.file}'
 
 
 class FilmListSerializer(serializers.ModelSerializer):
@@ -81,6 +84,6 @@ class FilmSerializer(serializers.ModelSerializer):
         initialize_screenshots(screenshots_data, film)
         return film
             
-    # actors - дополнительное поле в сериализаторе (делать запрос на сторонний API)
+    # actors - дополнительное поле в сериализаторе (делать запрос на сторонний API или на свою модель)
 
 

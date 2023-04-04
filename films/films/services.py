@@ -56,20 +56,20 @@ def initialize_screenshots(screenshots_data, film):
             resized_image = image.resize((314, 176))
             resized_image.save(f, format=image_format)
 
-        Screenshot.objects.create(film=film, name=file_name)
+        Screenshot.objects.create(film=film, file=file_name)
 
     # s3 files uploading
 
     # Credentials
-    aws_session = boto3.Session(
-        aws_access_key_id=os.environ.get('ACCESS_KEY'),
-        aws_secret_access_key=os.environ.get('SECRET_KEY'),
-    )
-    s3 = aws_session.client('s3')
-    for file, compressed_file in zip(pathlib.Path(file_dir).iterdir(),
-                                     pathlib.Path(compressed_file_dir).iterdir()):
-        s3.upload_file(file.absolute(), 'films-screenshots', f'{film.pk}/{file.name}')
-        s3.upload_file(compressed_file.absolute(), 'films-compressed-screenshots', f'{film.pk}/{compressed_file.name}')
+    # aws_session = boto3.Session(
+    #     aws_access_key_id=os.environ.get('ACCESS_KEY'),
+    #     aws_secret_access_key=os.environ.get('SECRET_KEY'),
+    # )
+    # s3 = aws_session.client('s3')
+    # for file, compressed_file in zip(pathlib.Path(file_dir).iterdir(),
+    #                                  pathlib.Path(compressed_file_dir).iterdir()):
+    #     s3.upload_file(file.absolute(), 'films-screenshots', f'{film.pk}/{file.name}')
+    #     s3.upload_file(compressed_file.absolute(), 'films-compressed-screenshots', f'{film.pk}/{compressed_file.name}')
 
     _clear_directory(file_dir)
     _clear_directory(compressed_file_dir)

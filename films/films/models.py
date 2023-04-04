@@ -16,4 +16,4 @@ class Film(models.Model):
     
 class Screenshot(models.Model):
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name='screenshots')
-    name = models.CharField(max_length=100, blank=True, null=True)
+    file = models.CharField(max_length=100, blank=True, null=True)
