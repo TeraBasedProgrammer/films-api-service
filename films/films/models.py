@@ -3,7 +3,7 @@ from django.db import models
 
 class Film(models.Model):
     title = models.CharField(max_length=50)
-    poster_name = models.CharField(max_length=100)
+    poster_format = models.CharField(max_length=4)
     rating = models.DecimalField(max_digits=4, decimal_places=2)
     imdb_rating = models.DecimalField(max_digits=4, decimal_places=2, editable=False)
     country = models.CharField(max_length=50)

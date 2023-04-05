@@ -33,14 +33,18 @@ class FilmListSerializer(serializers.ModelSerializer):
         view_name='film_retrieve',
         lookup_field='pk'
     )
+    poster_file = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Film
         fields = [
             'title',
-            'poster_name',
+            'poster_file',
             'url',
         ]
+
+    def get_poster_file(self, obj):
+        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/poster.{obj.poster_format}'
 
 
 class FilmSerializer(serializers.ModelSerializer):
@@ -56,12 +60,16 @@ class FilmSerializer(serializers.ModelSerializer):
     age_restriction = serializers.IntegerField(validators=[validate_age_restriction])
     screenshots = ScreenshotSerializer(many=True)
 
+    poster_file = serializers.SerializerMethodField(read_only=True)
+    poster_image = Base64ImageField(write_only=True, validators=[validate_image])
+
     class Meta:
         model = Film
         fields = [
             'pk',
             'title',
-            'poster_name',
+            'poster_file',
+            'poster_image',
             'rating',
             'country',
             'release_date',
@@ -72,15 +80,20 @@ class FilmSerializer(serializers.ModelSerializer):
             'imdb_id',
             'imdb_rating',
             'screenshots',
-        ] 
+        ]
+
+    def get_poster_file(self, obj):
+        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/poster.{obj.poster_format}'
 
     def create(self, validated_data):
         # Retrieving film imDb rating
         validated_data['imdb_rating'] = get_cached_imdb_response(validated_data)
 
-        # Retrieving and initializing screenshots data
+        # Retrieving and initializing screenshots and poster data
         screenshots_data = validated_data.pop('screenshots')
-        film = Film.objects.create(**validated_data)
+        poster_image = validated_data.pop('poster_image')
+
+        film = Film.objects.create(poster_format=poster_image.content_type.split("/")[1], **validated_data)
         initialize_screenshots(screenshots_data, film)
         return film
             
