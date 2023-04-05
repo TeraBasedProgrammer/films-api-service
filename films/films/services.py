@@ -4,6 +4,7 @@ import requests_cache
 import json
 import pathlib
 from PIL import Image
+import time
 
 from django.conf import settings
 from .models import Screenshot
@@ -22,7 +23,7 @@ def get_cached_imdb_response(validated_data) -> str:
     return response['imDb']
 
 
-def initialize_screenshots(screenshots_data, film):
+def initialize_images(poster_image, screenshots_data, film):
     # Path to temp screenshots dir
     file_dir = f'{settings.MEDIA_ROOT}/temp/{film.pk}/'
 
@@ -35,6 +36,13 @@ def initialize_screenshots(screenshots_data, film):
     # Creating film (pk) compressed screenshots folder
     _create_directory(compressed_file_dir)
 
+    poster_dir = f'{file_dir}poster.{film.poster_format}'
+
+    # Poster file creation
+    with open(poster_dir, 'wb') as f:
+        f.write(poster_image.file.read())
+
+    # Screenshots files creation
     for i, screenshot_data in enumerate(screenshots_data):
         image_data = screenshot_data.pop('image')
         image_format = image_data.content_type.split("/")[1]
@@ -51,7 +59,7 @@ def initialize_screenshots(screenshots_data, film):
         with open(compressed_file_path, 'wb') as f:
             f.write(image_data.file.read())
 
-            # Image compressing code
+            # Image compressing
             image = Image.open(file_path)
             resized_image = image.resize((314, 176))
             resized_image.save(f, format=image_format)
@@ -60,16 +68,18 @@ def initialize_screenshots(screenshots_data, film):
 
     # s3 files uploading
 
-    # Credentials
-    # aws_session = boto3.Session(
-    #     aws_access_key_id=os.environ.get('ACCESS_KEY'),
-    #     aws_secret_access_key=os.environ.get('SECRET_KEY'),
-    # )
-    # s3 = aws_session.client('s3')
-    # for file, compressed_file in zip(pathlib.Path(file_dir).iterdir(),
-    #                                  pathlib.Path(compressed_file_dir).iterdir()):
-    #     s3.upload_file(file.absolute(), 'films-screenshots', f'{film.pk}/{file.name}')
-    #     s3.upload_file(compressed_file.absolute(), 'films-compressed-screenshots', f'{film.pk}/{compressed_file.name}')
+    # Credentials and session
+    aws_session = boto3.Session(
+        aws_access_key_id=os.environ.get('ACCESS_KEY'),
+        aws_secret_access_key=os.environ.get('SECRET_KEY'),
+    )
+    s3 = aws_session.client('s3')
+
+    for file in pathlib.Path(file_dir).iterdir():
+        s3.upload_file(file.absolute(), 'films-screenshots', f'{film.pk}/{file.name}')
+
+    for compressed_file in pathlib.Path(compressed_file_dir).iterdir():
+        s3.upload_file(compressed_file.absolute(), 'films-compressed-screenshots', f'{film.pk}/{compressed_file.name}')
 
     _clear_directory(file_dir)
     _clear_directory(compressed_file_dir)

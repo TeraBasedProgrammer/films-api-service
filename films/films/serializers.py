@@ -2,7 +2,7 @@ from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 
 from .models import Film, Screenshot
-from .services import get_cached_imdb_response, initialize_screenshots
+from .services import get_cached_imdb_response, initialize_images
 from .validators import validate_imdb_id, validate_rating, validate_age_restriction, validate_text, validate_image
 
 
@@ -86,7 +86,7 @@ class FilmSerializer(serializers.ModelSerializer):
         return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/poster.{obj.poster_format}'
 
     def create(self, validated_data):
-        # Retrieving film imDb rating
+        # Retrieving and initializing film imDb rating
         validated_data['imdb_rating'] = get_cached_imdb_response(validated_data)
 
         # Retrieving and initializing screenshots and poster data
@@ -94,7 +94,7 @@ class FilmSerializer(serializers.ModelSerializer):
         poster_image = validated_data.pop('poster_image')
 
         film = Film.objects.create(poster_format=poster_image.content_type.split("/")[1], **validated_data)
-        initialize_screenshots(screenshots_data, film)
+        initialize_images(poster_image, screenshots_data, film)
         return film
             
     # actors - дополнительное поле в сериализаторе (делать запрос на сторонний API или на свою модель)
