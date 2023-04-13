@@ -11,7 +11,7 @@ then
     echo "PostgreSQL started"
 fi
 
-python manage.py clearfilms
+python manage.py reset-db
 python manage.py migrate
 
 exec "$@"

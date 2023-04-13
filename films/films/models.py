@@ -3,9 +3,16 @@ from django.db import models
 
 class Film(models.Model):
     title = models.CharField(max_length=50)
+
+    # Format of the poster image (for )
     poster_format = models.CharField(max_length=4)
     rating = models.DecimalField(max_digits=4, decimal_places=2)
     imdb_rating = models.DecimalField(max_digits=4, decimal_places=2, editable=False)
+
+    # Many-to-many relations
+    genres = models.ManyToManyField('Genre', db_table='FilmGenre')
+    actors = models.ManyToManyField('Actor', db_table='FilmActor')
+
     country = models.CharField(max_length=50)
     release_date = models.DateField()
     director = models.CharField(max_length=50)
@@ -17,3 +24,19 @@ class Film(models.Model):
 class Screenshot(models.Model):
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name='screenshots')
     file = models.CharField(max_length=100, blank=True, null=True)
+
+
+class Genre(models.Model):
+    title = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.title
+
+
+class Actor(models.Model):
+    name = models.CharField(max_length=50)
+    age = models.IntegerField()
+    description = models.TextField()
+
+    # Format of the actor image (it has the same name, format can only change)
+    photo_format = models.CharField(max_length=4)

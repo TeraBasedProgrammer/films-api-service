@@ -3,14 +3,14 @@ import boto3
 import requests_cache
 import json
 import pathlib
-from PIL import Image
-import time
+import logging
 
+from PIL import Image
 from django.conf import settings
 from .models import Screenshot
 
 
-def get_cached_imdb_response(validated_data) -> str:
+def get_cached_imdb_response(imdb_id) -> str:
     session = requests_cache.CachedSession(cache_name=f'{os.path.dirname(__file__)}/cache/imdb-cache', backend='sqlite',
                                            expire_after=600)
     # fix error: raise ConnectionError(e, request=request)
@@ -19,7 +19,7 @@ def get_cached_imdb_response(validated_data) -> str:
     # (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x7f62410b6290>:
     # Failed to establish a new connection: [Errno -3] Try again'))
     response = json.loads((session.get(
-        'https://imdb-api.com/en/API/Ratings/k_92xc2azh/%s' % validated_data.pop('imdb_id')).content.decode('utf-8')))
+        'https://imdb-api.com/en/API/Ratings/k_92xc2azh/%s' % imdb_id).content.decode('utf-8')))
     return response['imDb']
 
 
@@ -69,10 +69,7 @@ def initialize_images(poster_image, screenshots_data, film):
     # s3 files uploading
 
     # Credentials and session
-    aws_session = boto3.Session(
-        aws_access_key_id=os.environ.get('ACCESS_KEY'),
-        aws_secret_access_key=os.environ.get('SECRET_KEY'),
-    )
+    aws_session = settings.AWS_SESSION
     s3 = aws_session.client('s3')
 
     for file in pathlib.Path(file_dir).iterdir():
@@ -83,6 +80,17 @@ def initialize_images(poster_image, screenshots_data, film):
 
     _clear_directory(file_dir)
     _clear_directory(compressed_file_dir)
+
+
+def clean_s3():
+    aws_session = settings.AWS_SESSION
+
+    s3_client = aws_session.client('s3')
+    s3_resource = aws_session.resource('s3')
+
+    for element in s3_client.list_buckets()['Buckets']:
+        bucket = s3_resource.Bucket(element['Name'])
+        bucket.objects.all().delete()
 
 
 def _create_directory(path: str):
@@ -103,6 +111,3 @@ def _clear_directory(path: str):
         os.rmdir(path)
     except FileNotFoundError:
         pass
-
-
-
