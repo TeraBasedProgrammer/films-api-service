@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 
-from .models import Film, Screenshot, Actor, Genre
+from .models import Film, Screenshot
 from .services import get_cached_imdb_response, initialize_images
 from .validators import validate_imdb_id, validate_rating, validate_age_restriction, validate_text, validate_image
 

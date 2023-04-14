@@ -22,9 +22,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'films',
     'rest_framework',
     'drf_extra_fields',
+
+    # Current project apps
+    'actors',
+    'films',
 ]
 
 MIDDLEWARE = [

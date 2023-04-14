@@ -1,4 +1,5 @@
 from django.db import models
+from actors.models import Actor
 
 
 class Film(models.Model):
@@ -11,7 +12,7 @@ class Film(models.Model):
 
     # Many-to-many relations
     genres = models.ManyToManyField('Genre', db_table='FilmGenre')
-    actors = models.ManyToManyField('Actor', db_table='FilmActor')
+    actors = models.ManyToManyField(Actor, db_table='FilmActor')
 
     country = models.CharField(max_length=50)
     release_date = models.DateField()
@@ -33,13 +34,3 @@ class Genre(models.Model):
         return self.title
 
 
-class Actor(models.Model):
-    name = models.CharField(max_length=50)
-    age = models.IntegerField()
-    description = models.TextField()
-
-    # Format of the actor image (it has the same name, format can only change)
-    photo_format = models.CharField(max_length=4)
-
-    def __str__(self):
-        return self.name
