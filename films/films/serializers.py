@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 
-from .models import Film, Screenshot
+from .models import Film, Screenshot, Genre
 from .services import get_cached_imdb_response, initialize_images
 from .validators import validate_imdb_id, validate_rating, validate_age_restriction, validate_text, validate_image
 
@@ -30,6 +30,15 @@ class ScreenshotSerializer(serializers.ModelSerializer):
 
     def get_compressed_file(self, obj):
         return f'https://films-compressed-screenshots.s3.eu-central-1.amazonaws.com/{obj.film.pk}/{obj.file}'
+
+
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = [
+            'pk',
+            'title',
+        ]
 
 
 class FilmListSerializer(serializers.ModelSerializer):
@@ -70,6 +79,8 @@ class FilmSerializer(serializers.ModelSerializer):
     screenshots = ScreenshotSerializer(many=True)
     poster_file = serializers.SerializerMethodField(read_only=True)
     poster_image = Base64ImageField(write_only=True, validators=[validate_image])
+
+    genres = GenreSerializer(many=True)
 
     class Meta:
         model = Film
@@ -117,3 +128,5 @@ class FilmSerializer(serializers.ModelSerializer):
 
         initialize_images(poster_image, screenshots_data, film)
         return film
+
+

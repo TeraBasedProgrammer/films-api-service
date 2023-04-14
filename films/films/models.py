@@ -28,7 +28,7 @@ class Screenshot(models.Model):
 
 
 class Genre(models.Model):
-    title = models.CharField(max_length=50)
+    title = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.title

@@ -2,10 +2,11 @@ from django.db.models import Q
 from rest_framework import generics
 
 
-from .models import Film
-from .serializers import FilmSerializer, FilmListSerializer
+from .models import Film, Genre
+from .serializers import FilmSerializer, FilmListSerializer, GenreSerializer
 
 
+# Films views
 class FilmListCreateView(generics.ListCreateAPIView):
     queryset = Film.objects.all()
 
@@ -56,3 +57,51 @@ class FilmSearchView(generics.ListAPIView):
 
 
 film_search = FilmSearchView.as_view()
+
+
+# Genre views
+class GenreListCreateView(generics.ListCreateAPIView):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
+genre_list_create = GenreListCreateView.as_view()
+
+
+class GenreDetailAPIView(generics.RetrieveAPIView):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
+genre_retrieve = GenreDetailAPIView.as_view()
+
+
+class GenreUpdateAPIView(generics.UpdateAPIView):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
+genre_update = GenreUpdateAPIView.as_view()
+
+
+class GenreDeleteAPIView(generics.DestroyAPIView):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
+genre_delete = GenreDeleteAPIView.as_view()
+
+
+class GenreSearchView(generics.ListAPIView):
+    model = Genre
+    serializer_class = GenreSerializer
+
+    def get_queryset(self):
+        query = self.request.GET.get("q")
+        object_list = Film.objects.filter(
+             Q(title__icontains=query)
+        )
+        return object_list
+
+
+genre_search = GenreSearchView.as_view()
