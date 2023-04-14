@@ -4,7 +4,7 @@ from django.db import models
 class Film(models.Model):
     title = models.CharField(max_length=50)
 
-    # Format of the poster image (for )
+    # Format of the poster image (poster name is hardcoded, so it's not stored in db)
     poster_format = models.CharField(max_length=4)
     rating = models.DecimalField(max_digits=4, decimal_places=2)
     imdb_rating = models.DecimalField(max_digits=4, decimal_places=2, editable=False)
@@ -40,3 +40,6 @@ class Actor(models.Model):
 
     # Format of the actor image (it has the same name, format can only change)
     photo_format = models.CharField(max_length=4)
+
+    def __str__(self):
+        return self.name

@@ -1,21 +1,26 @@
 from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 
-from .models import Film, Screenshot
+from .models import Film, Screenshot, Actor, Genre
 from .services import get_cached_imdb_response, initialize_images
 from .validators import validate_imdb_id, validate_rating, validate_age_restriction, validate_text, validate_image
 
 
 class ScreenshotSerializer(serializers.ModelSerializer):
-    image = Base64ImageField(write_only=True, validators=[validate_image])
-
+    # Model fields
     file = serializers.SerializerMethodField(read_only=True)
+
+    # Additional fields
     compressed_file = serializers.SerializerMethodField(read_only=True)
+    image = Base64ImageField(write_only=True, validators=[validate_image])
 
     class Meta:
         model = Screenshot
         fields = [
+            # Model fields
             'file',
+
+            # Additional fields
             'compressed_file',
             'image',
         ]
@@ -28,6 +33,7 @@ class ScreenshotSerializer(serializers.ModelSerializer):
 
 
 class FilmListSerializer(serializers.ModelSerializer):
+    # Additional fields
     url = serializers.HyperlinkedIdentityField(
         view_name='film_retrieve',
         lookup_field='pk'
@@ -37,7 +43,10 @@ class FilmListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Film
         fields = [
+            # Model fields
             'title',
+
+            # Additional fields
             'poster_file',
             'url',
         ]
@@ -78,9 +87,11 @@ class FilmSerializer(serializers.ModelSerializer):
             'director',
             'description',
             'age_restriction',
-            'studio',
-            'imdb_id',
             'imdb_rating',
+            'studio',
+
+            # Additional fields
+            'imdb_id',
             'screenshots',
         ]
 
@@ -92,11 +103,17 @@ class FilmSerializer(serializers.ModelSerializer):
         imdb_id = validated_data.pop('imdb_id')
         validated_data['imdb_rating'] = get_cached_imdb_response(imdb_id)
 
-        # Retrieving and initializing screenshots and poster data
+        # Retrieving screenshots and poster data
         screenshots_data = validated_data.pop('screenshots')
         poster_image = validated_data.pop('poster_image')
 
-        # Creates film instance and manually sets up poster_format field
+        # Create film instance, manually set up poster_format field and many-to-many fields
+        actors_data = validated_data.pop('actors')
+        genres_data = validated_data.pop('genres')
+
         film = Film.objects.create(poster_format=poster_image.content_type.split("/")[1], **validated_data)
+        film.actors.set(actors_data)
+        film.genres.set(genres_data)
+
         initialize_images(poster_image, screenshots_data, film)
         return film

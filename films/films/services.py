@@ -1,26 +1,33 @@
 import os
-import boto3
 import requests_cache
 import json
 import pathlib
-import logging
 
 from PIL import Image
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from .models import Screenshot
 
 
 def get_cached_imdb_response(imdb_id) -> str:
-    session = requests_cache.CachedSession(cache_name=f'{os.path.dirname(__file__)}/cache/imdb-cache', backend='sqlite',
+    """
+    Retrieves film imdb rating (directly or from cache)
+    @param imdb_id: imdb id for IMDB API (e.g. tt1375666)
+    @return: imdb rating string (e.g. '8.80')
+    """
+    try:
+        session = requests_cache.CachedSession(cache_name=f'{os.path.dirname(__file__)}/cache/imdb-cache', backend='sqlite',
                                            expire_after=600)
-    # fix error: raise ConnectionError(e, request=request)
-    # cinema-films-1  | requests.exceptions.ConnectionError: HTTPSConnectionPool(host='imdb-api.com', port=443):
-    # Max retries exceeded with url: /en/API/Ratings/k_92xc2azh/tt1375666
-    # (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x7f62410b6290>:
-    # Failed to establish a new connection: [Errno -3] Try again'))
-    response = json.loads((session.get(
-        'https://imdb-api.com/en/API/Ratings/k_92xc2azh/%s' % imdb_id).content.decode('utf-8')))
-    return response['imDb']
+        # fix error: raise ConnectionError(e, request=request)
+        # cinema-films-1  | requests.exceptions.ConnectionError: HTTPSConnectionPool(host='imdb-api.com', port=443):
+        # Max retries exceeded with url: /en/API/Ratings/k_92xc2azh/tt1375666
+        # (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x7f62410b6290>:
+        # Failed to establish a new connection: [Errno -3] Try again'))
+        response = json.loads((session.get(
+            'https://imdb-api.com/en/API/Ratings/k_92xc2azh/%s' % imdb_id).content.decode('utf-8')))
+        return response['imDb']
+    except ConnectionError:
+        raise ValidationError('Connection error, try again')
 
 
 def initialize_images(poster_image, screenshots_data, film):
@@ -83,6 +90,9 @@ def initialize_images(poster_image, screenshots_data, film):
 
 
 def clean_s3():
+    """
+    Cleans all s3 buckets when program starts
+    """
     aws_session = settings.AWS_SESSION
 
     s3_client = aws_session.client('s3')
