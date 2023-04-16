@@ -13,5 +13,7 @@ def initialize_photo(photo_image, actor):
 
     send_images_to_s3(file_dir, 'actors-screenshots', actor)
 
+    clear_directory(file_dir)
+
 
 

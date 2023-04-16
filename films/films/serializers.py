@@ -4,6 +4,8 @@ from drf_extra_fields.fields import Base64ImageField
 from .models import Film, Screenshot, Genre
 from .services import get_cached_imdb_response, initialize_images
 from .validators import validate_imdb_id, validate_rating, validate_age_restriction, validate_text, validate_image
+from actors.models import Actor
+from actors.serializers import ActorListSerializer
 
 
 class ScreenshotSerializer(serializers.ModelSerializer):
@@ -80,7 +82,8 @@ class FilmSerializer(serializers.ModelSerializer):
     poster_file = serializers.SerializerMethodField(read_only=True)
     poster_image = Base64ImageField(write_only=True, validators=[validate_image])
 
-    genres = GenreSerializer(many=True)
+    # Field for listing existing actors (drf doesn't see this field from model, so it has to be in serializer)
+    actors = serializers.PrimaryKeyRelatedField(queryset=Actor.objects.all(), many=True)
 
     class Meta:
         model = Film
@@ -108,6 +111,11 @@ class FilmSerializer(serializers.ModelSerializer):
 
     def get_poster_file(self, obj):
         return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/poster.{obj.poster_format}'
+
+    # Doesn't work
+    def get_actors(self, obj):
+        obj.actors = ActorListSerializer(many=True)
+        return obj.actors
 
     def create(self, validated_data):
         # Retrieving and initializing film imDb rating

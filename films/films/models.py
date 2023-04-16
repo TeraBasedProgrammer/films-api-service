@@ -10,9 +10,9 @@ class Film(models.Model):
     rating = models.DecimalField(max_digits=4, decimal_places=2)
     imdb_rating = models.DecimalField(max_digits=4, decimal_places=2, editable=False)
 
-    # Many-to-many relations
+    # Many-to-many relations for listing related actors and genres
     genres = models.ManyToManyField('Genre', db_table='FilmGenre')
-    actors = models.ManyToManyField(Actor, db_table='FilmActor')
+    actors = models.ManyToManyField(Actor, through='FilmActor')
 
     country = models.CharField(max_length=50)
     release_date = models.DateField()
@@ -21,7 +21,12 @@ class Film(models.Model):
     age_restriction = models.IntegerField()
     studio = models.CharField(max_length=50)
 
-    
+
+class FilmActor(models.Model):
+    film = models.ForeignKey(Film, on_delete=models.SET_NULL, null=True)
+    actor = models.ForeignKey(Actor, on_delete=models.SET_NULL, null=True)
+
+
 class Screenshot(models.Model):
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name='screenshots')
     file = models.CharField(max_length=100, blank=True, null=True)
