@@ -32,6 +32,18 @@ def validate_age_restriction(value):
     return value
 
 
+def validate_names(value):
+    language_validator = RegexValidator(
+        regex=r'^[A-Za-zА-Яа-яЇїІіЄєҐґ\',\- ]+$',
+        message='Text format is not allowed',
+    )
+
+    try:
+        language_validator(value)
+    except ValidationError as e:
+        raise ValidationError(e.message, code='invalid_text')
+
+
 def validate_text(value):
     language_validator = RegexValidator(
         regex=r'^[A-Za-z0-9А-Яа-яЇїІіЄєҐґ:?!\-\+\(\)\.,ʼ=№#& ]+$',

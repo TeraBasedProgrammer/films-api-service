@@ -67,15 +67,6 @@ class FilmListSerializer(serializers.ModelSerializer):
 
 
 class FilmSerializer(serializers.ModelSerializer):
-    # Model fields
-    title = serializers.CharField(validators=[validate_text])
-    country = serializers.CharField(validators=[validate_text])
-    director = serializers.CharField(validators=[validate_text])
-    description = serializers.CharField(validators=[validate_text]) 
-    studio = serializers.CharField(validators=[validate_text])
-    rating = serializers.DecimalField(max_digits=4, decimal_places=2, validators=[validate_rating])
-    age_restriction = serializers.IntegerField(validators=[validate_age_restriction])
-
     # Additional fields
     imdb_id = serializers.CharField(write_only=True, validators=[validate_imdb_id])
     screenshots = ScreenshotSerializer(many=True)

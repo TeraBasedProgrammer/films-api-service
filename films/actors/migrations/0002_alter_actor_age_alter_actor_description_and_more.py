@@ -25,6 +25,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='actor',
             name='name',
-            field=models.CharField(max_length=50, validators=[actors.validators.validate_name]),
+            field=models.CharField(max_length=50, validators=[films.validators.validate_names]),
         ),
     ]
