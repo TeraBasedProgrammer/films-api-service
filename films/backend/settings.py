@@ -92,7 +92,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'EET'
 
 USE_I18N = True
 
@@ -117,5 +117,41 @@ AWS_SESSION = boto3.Session(
         aws_access_key_id=os.environ.get('ACCESS_KEY'),
         aws_secret_access_key=os.environ.get('SECRET_KEY'),
     )
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] [{asctime}] [{module}]: {message}",
+            "style": "{",
+        },
+    },
+    "filters": {
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "propagate": True,
+            "level": "INFO",
+        },
+        "debug_django": {
+            "handlers": ["console"],
+            "propagate": True,
+            "level": "DEBUG",
+        }
+    },
+}
+
 
 

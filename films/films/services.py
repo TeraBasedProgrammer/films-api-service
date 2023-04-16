@@ -2,11 +2,15 @@ import os
 import requests_cache
 import json
 import pathlib
+import logging
 
 from PIL import Image
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from .models import Screenshot
+
+
+debug_logger = logging.getLogger('debug_django')
 
 
 def get_cached_imdb_response(imdb_id) -> str:
@@ -38,15 +42,15 @@ def initialize_images(poster_image, screenshots_data, film):
     compressed_file_dir = f'{file_dir[:-1]}-compressed/'
 
     # Creating film (pk) screenshots folder
-    _create_directory(file_dir)
+    create_directory(file_dir)
 
     # Creating film (pk) compressed screenshots folder
-    _create_directory(compressed_file_dir)
+    create_directory(compressed_file_dir)
 
-    poster_dir = f'{file_dir}poster.{film.poster_format}'
+    poster_file = f'{file_dir}poster.{film.poster_format}'
 
     # Poster file creation
-    with open(poster_dir, 'wb') as f:
+    with open(poster_file, 'wb') as f:
         f.write(poster_image.file.read())
 
     # Screenshots files creation
@@ -76,23 +80,34 @@ def initialize_images(poster_image, screenshots_data, film):
     # s3 files uploading
 
     # Credentials and session
+    send_images_to_s3(file_dir, 'films-screenshots', film)
+    send_images_to_s3(compressed_file_dir, 'films-compressed-screenshots', film)
+
+    clear_directory(file_dir)
+    clear_directory(compressed_file_dir)
+
+
+def send_images_to_s3(directory, bucket, instance):
+    """
+    Sends images to given s3 bucket
+    @param directory: path to directory with images
+    @param bucket: s3 bucket name
+    @param instance: model instance for getting 'pk' field
+    """
+
+    # Credentials and session
     aws_session = settings.AWS_SESSION
     s3 = aws_session.client('s3')
 
-    for file in pathlib.Path(file_dir).iterdir():
-        s3.upload_file(file.absolute(), 'films-screenshots', f'{film.pk}/{file.name}')
-
-    for compressed_file in pathlib.Path(compressed_file_dir).iterdir():
-        s3.upload_file(compressed_file.absolute(), 'films-compressed-screenshots', f'{film.pk}/{compressed_file.name}')
-
-    _clear_directory(file_dir)
-    _clear_directory(compressed_file_dir)
+    for file in pathlib.Path(directory).iterdir():
+        s3.upload_file(file.absolute(), bucket, f'{instance.pk}/{file.name}')
 
 
 def clean_s3():
     """
     Cleans all s3 buckets when program starts
     """
+    debug_logger.debug('Connecting to Amazon S3...')
     aws_session = settings.AWS_SESSION
 
     s3_client = aws_session.client('s3')
@@ -101,16 +116,19 @@ def clean_s3():
     for element in s3_client.list_buckets()['Buckets']:
         bucket = s3_resource.Bucket(element['Name'])
         bucket.objects.all().delete()
+        debug_logger.debug('Deleted all objects from "%s" bucket' % bucket.name)
+
+    debug_logger.debug('Successfully cleaned s3 data')
 
 
-def _create_directory(path: str):
+def create_directory(path: str):
     try:
         os.mkdir(path)
     except FileExistsError:
         pass
 
 
-def _clear_directory(path: str):
+def clear_directory(path: str):
     for file in pathlib.Path(path).iterdir():
         try:
             os.remove(file.absolute())
