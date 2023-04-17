@@ -6,11 +6,14 @@ import logging
 
 from PIL import Image
 from django.conf import settings
+from django.db.models import Model
 from django.core.exceptions import ValidationError
-from .models import Screenshot
+from .models import Screenshot, Film
+from actors.models import Actor
 
 
 debug_logger = logging.getLogger('debug_django')
+logger = logging.getLogger('django')
 
 
 def get_cached_imdb_response(imdb_id) -> str:
@@ -119,6 +122,35 @@ def clean_s3():
         debug_logger.debug('Deleted all objects from "%s" bucket' % bucket.name)
 
     debug_logger.debug('Successfully cleaned s3 data')
+
+
+def clean_s3_model_data(instance: Model):
+    """
+    Cleans specific film / actor s3 data
+    """
+
+    # Initializing S3 session variables
+    logger.info('Connecting to Amazon S3...')
+    aws_session = settings.AWS_SESSION
+    s3_resource = aws_session.resource('s3')
+
+    if isinstance(instance, Film):
+        screenshots_bucket = s3_resource.Bucket('films-screenshots')
+        compressed_screenshots_bucket = s3_resource.Bucket('films-compressed-screenshots')
+
+        # Deleting specific screenshots folder (e.g. '241/')
+        deleted_screenshots = screenshots_bucket.objects.filter(Prefix='%s/' % instance.pk).delete()
+        deleted_compressed_screenshots = compressed_screenshots_bucket.objects.filter(Prefix='%s/' % instance.pk).delete()
+
+        debug_logger.debug('Deleted screenshot objects: %s' % deleted_screenshots[0]['Deleted'])
+        debug_logger.debug('Deleted compressed screenshot objects: %s' % deleted_compressed_screenshots[0]['Deleted'])
+
+    elif isinstance(instance, Actor):
+        actors_bucket = s3_resource.Bucket('actors-screenshots')
+        deleted_actors_screenshots = actors_bucket.objects.filter(Prefix='%s/' % instance.pk).delete()
+        debug_logger.debug('Deleted screenshot objects: %s' % deleted_actors_screenshots[0]['Deleted'])
+
+    logger.info(f'Successfully cleaned {instance.__class__.__name__.lower()}s/{instance.pk} S3 data')
 
 
 def create_directory(path: str):

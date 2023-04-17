@@ -3,6 +3,7 @@ from rest_framework import generics
 
 from .models import Actor
 from .serializers import ActorSerializer, ActorListSerializer
+from films.services import clean_s3_model_data
 
 
 # Films views
@@ -38,6 +39,10 @@ actor_update = ActorUpdateAPIView.as_view()
 class ActorDeleteAPIView(generics.DestroyAPIView):
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
+
+    def delete(self, request, *args, **kwargs):
+        clean_s3_model_data(self.get_object())
+        return self.destroy(request, *args, **kwargs)
 
 
 actor_delete = ActorDeleteAPIView.as_view()

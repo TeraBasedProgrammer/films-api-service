@@ -12,6 +12,8 @@ class Command(BaseCommand):
 
         # Retrieving all model classes of the project
         models_classes = dict([(name, cls) for name, cls in models.__dict__.items() if isinstance(cls, type)])
+
+        # Cleaning all project's custom models (including s3 data)
         for key, value in models_classes.items():
             deleted_count, _ = value.objects.all().delete()
             debug_logger.debug(f'Cleaned model {key}. Objects deleted: {deleted_count}')

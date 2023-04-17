@@ -4,6 +4,7 @@ from rest_framework import generics
 
 from .models import Film, Genre
 from .serializers import FilmSerializer, FilmListSerializer, GenreSerializer
+from .services import clean_s3_model_data
 
 
 # Films views
@@ -39,6 +40,10 @@ film_update = FilmUpdateAPIView.as_view()
 class FilmDeleteAPIView(generics.DestroyAPIView):
     queryset = Film.objects.all()
     serializer_class = FilmSerializer
+
+    def delete(self, request, *args, **kwargs):
+        clean_s3_model_data(self.get_object())
+        return self.destroy(request, *args, **kwargs)
 
 
 film_delete = FilmDeleteAPIView.as_view()
