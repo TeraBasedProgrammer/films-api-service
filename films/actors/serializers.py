@@ -31,6 +31,7 @@ class ActorSerializer(serializers.ModelSerializer):
     photo_image = Base64ImageField(write_only=True, validators=[validate_image])
     photo_file = serializers.SerializerMethodField(read_only=True)
 
+    # Field for listing related films (drf doesn't see this field from model, so it has to be in serializer)
     films = serializers.PrimaryKeyRelatedField(queryset=Film.objects.all(), many=True)
 
     class Meta:
@@ -59,4 +60,13 @@ class ActorSerializer(serializers.ModelSerializer):
 
         initialize_photo(photo_image, actor)
         return actor
+
+    def to_representation(self, instance):
+        # Local import to avoid circular import
+        from films.serializers import FilmListSerializer
+
+        ret = super().to_representation(instance)
+        ret['films'] = FilmListSerializer(instance.films.all(), many=True,
+                                            context={'request': self.context.get('request')}).data
+        return ret
 
