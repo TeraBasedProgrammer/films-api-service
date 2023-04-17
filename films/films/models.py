@@ -24,8 +24,8 @@ class Film(models.Model):
 
 
 class FilmActor(models.Model):
-    film = models.ForeignKey(Film, on_delete=models.SET_NULL, null=True)
-    actor = models.ForeignKey(Actor, on_delete=models.SET_NULL, null=True)
+    film = models.ForeignKey(Film, on_delete=models.CASCADE, null=True)
+    actor = models.ForeignKey(Actor, on_delete=models.CASCADE, null=True)
 
 
 class Screenshot(models.Model):
