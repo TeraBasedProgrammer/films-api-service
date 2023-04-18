@@ -133,7 +133,7 @@ class FilmSerializer(serializers.ModelSerializer):
         initialize_images(poster_image, screenshots_data, film)
         return film
 
-    # Gives serialized genres and actors objects instead of just PK's
+    # Changing representation of actors and genres fields from just PK's to serialized objects
     def to_representation(self, instance):
         # Local import to avoid circular import
         from actors.serializers import ActorListSerializer

@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     # Current project apps
     'actors',
     'films',
+    'playlists',
 ]
 
 MIDDLEWARE = [
