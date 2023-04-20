@@ -120,7 +120,7 @@ def clean_s3():
         bucket.objects.all().delete()
         logger.debug('Deleted all objects from "%s" bucket' % bucket.name)
 
-    # logger.debug('Successfully cleaned s3 data')
+    logger.debug('Successfully cleaned s3 data')
 
 
 def clean_s3_model_data(instance: Model):
@@ -129,7 +129,7 @@ def clean_s3_model_data(instance: Model):
     """
 
     # Initializing S3 session variables
-    # logger.info('Connecting to Amazon S3...')
+    logger.info('Connecting to Amazon S3...')
     aws_session = settings.AWS_SESSION
     s3_resource = aws_session.resource('s3')
 

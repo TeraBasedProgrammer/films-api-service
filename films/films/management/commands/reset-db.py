@@ -17,5 +17,4 @@ class Command(BaseCommand):
         for key, value in models_classes.items():
             deleted_count, _ = value.objects.all().delete()
             debug_logger.debug(f'Cleaned model {key}. Objects deleted: {deleted_count}')
-            debug_logger.info(f'Cleaned model {key}. Objects deleted: {deleted_count}')
         clean_s3()
