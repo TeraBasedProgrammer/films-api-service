@@ -119,6 +119,8 @@ AWS_SESSION = boto3.Session(
         aws_secret_access_key=os.environ.get('SECRET_KEY'),
     )
 
+DJANGO_LOG_LEVEL = 'DEBUG' if DEBUG == 'True' else 'INFO'
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -146,11 +148,16 @@ LOGGING = {
             "propagate": True,
             "level": "INFO",
         },
-        "debug_django": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "logger": {
             "handlers": ["console"],
             "propagate": True,
-            "level": "DEBUG",
-        }
+            "level": DJANGO_LOG_LEVEL,
+        },
     },
 }
 

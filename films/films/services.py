@@ -12,8 +12,7 @@ from .models import Screenshot, Film
 from actors.models import Actor
 
 
-debug_logger = logging.getLogger('debug_django')
-logger = logging.getLogger('django')
+logger = logging.getLogger('logger')
 
 
 def get_cached_imdb_response(imdb_id) -> str:
@@ -110,7 +109,7 @@ def clean_s3():
     """
     Cleans all s3 buckets when program starts
     """
-    debug_logger.debug('Connecting to Amazon S3...')
+    logger.debug('Connecting to Amazon S3...')
     aws_session = settings.AWS_SESSION
 
     s3_client = aws_session.client('s3')
@@ -119,9 +118,9 @@ def clean_s3():
     for element in s3_client.list_buckets()['Buckets']:
         bucket = s3_resource.Bucket(element['Name'])
         bucket.objects.all().delete()
-        debug_logger.debug('Deleted all objects from "%s" bucket' % bucket.name)
+        logger.debug('Deleted all objects from "%s" bucket' % bucket.name)
 
-    debug_logger.debug('Successfully cleaned s3 data')
+    # logger.debug('Successfully cleaned s3 data')
 
 
 def clean_s3_model_data(instance: Model):
@@ -130,7 +129,7 @@ def clean_s3_model_data(instance: Model):
     """
 
     # Initializing S3 session variables
-    logger.info('Connecting to Amazon S3...')
+    # logger.info('Connecting to Amazon S3...')
     aws_session = settings.AWS_SESSION
     s3_resource = aws_session.resource('s3')
 
@@ -142,13 +141,13 @@ def clean_s3_model_data(instance: Model):
         deleted_screenshots = screenshots_bucket.objects.filter(Prefix='%s/' % instance.pk).delete()
         deleted_compressed_screenshots = compressed_screenshots_bucket.objects.filter(Prefix='%s/' % instance.pk).delete()
 
-        debug_logger.debug('Deleted screenshot objects: %s' % deleted_screenshots[0]['Deleted'])
-        debug_logger.debug('Deleted compressed screenshot objects: %s' % deleted_compressed_screenshots[0]['Deleted'])
+        logger.debug('Deleted screenshot objects: %s' % deleted_screenshots[0]['Deleted'])
+        logger.debug('Deleted compressed screenshot objects: %s' % deleted_compressed_screenshots[0]['Deleted'])
 
     elif isinstance(instance, Actor):
         actors_bucket = s3_resource.Bucket('actors-screenshots')
         deleted_actors_screenshots = actors_bucket.objects.filter(Prefix='%s/' % instance.pk).delete()
-        debug_logger.debug('Deleted screenshot objects: %s' % deleted_actors_screenshots[0]['Deleted'])
+        logger.debug('Deleted screenshot objects: %s' % deleted_actors_screenshots[0]['Deleted'])
 
     logger.info(f'Successfully cleaned {instance.__class__.__name__.lower()}s/{instance.pk} S3 data')
 
