@@ -32,6 +32,7 @@ class PlaylistSerializer(serializers.ModelSerializer):
     class Meta:
         model = Playlist
         fields = [
+            # Model fields
             'pk',
             'title',
             'films',
@@ -45,8 +46,7 @@ class PlaylistSerializer(serializers.ModelSerializer):
         playlist = Playlist.objects.create(**validated_data)
         playlist.films.set(films_data)
 
-        logger.info('Successfully created "%s" instance' % str(playlist))
-        return playlist
+        logger.info(f'Successfully created "{str(playlist)}" instance')
 
     # Changing representation of films field from just PK's to serialized objects
     def to_representation(self, instance):

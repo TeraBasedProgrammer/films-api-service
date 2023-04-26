@@ -41,17 +41,17 @@ def get_cached_imdb_response(imdb_id) -> str:
 
 
 def create_directory(path: str):
-    logger.debug('Creating directory "%s"...' % path)
+    logger.debug(f'Creating directory "{path}"...')
     try:
-        logger.debug('Successfully created directory "%s"' % path)
+        logger.debug(f'Successfully created directory "{path}"')
         os.mkdir(path)
     except FileExistsError:
-        logger.debug('FileExistsError - Directory "%s" already exists' % path)
+        logger.debug(f'FileExistsError - Directory "{path}" already exists')
         pass
 
 
 def clear_directory(path: str):
-    logger.debug('Deleting directory "%s"...' % path)
+    logger.debug(f'Deleting directory "{path}"...')
     for file in pathlib.Path(path).iterdir():
         try:
             os.remove(file.absolute())
@@ -62,7 +62,7 @@ def clear_directory(path: str):
         os.rmdir(path)
     except FileNotFoundError:
         pass
-    logger.debug('Successfully removed directory "%s"' % path)
+    logger.debug(f'Successfully removed directory "{path}"')
 
 
 def send_images_to_s3(directory, bucket, instance):
@@ -79,9 +79,9 @@ def send_images_to_s3(directory, bucket, instance):
 
     for file in pathlib.Path(directory).iterdir():
         s3.upload_file(file.absolute(), bucket, f'{instance.pk}/{file.name}')
-        logger.debug('"%s" file was successfully sent to S3' % file.name)
+        logger.debug(f'"{file.name}" file was successfully sent to S3')
 
-    logger.info('All "%s" files were successfully sent to S3' % str(instance))
+    logger.info(f'All "{str(instance)}" files were successfully sent to S3')
 
 
 def initialize_images(poster_image, screenshots_data, film):
@@ -104,7 +104,7 @@ def initialize_images(poster_image, screenshots_data, film):
     # Poster file creation
     with open(poster_file, 'wb') as f:
         f.write(poster_image.file.read())
-        logger.debug('Created "%s" film poster file' % str(film))
+        logger.debug(f'Created "{str(film)}" film poster file')
 
     # Screenshots files creation
     for i, screenshot_data in enumerate(screenshots_data):
@@ -129,7 +129,7 @@ def initialize_images(poster_image, screenshots_data, film):
             resized_image.save(f, format=image_format)
 
         Screenshot.objects.create(film=film, file=file_name)
-        logger.debug('Created "%s" file' % file_name)
+        logger.debug(f'Created "{file_name}" file')
 
     # s3 files uploading
 
@@ -154,7 +154,7 @@ def clean_s3():
     for element in s3_client.list_buckets()['Buckets']:
         bucket = s3_resource.Bucket(element['Name'])
         bucket.objects.all().delete()
-        logger.debug('Deleted all objects from "%s" bucket' % bucket.name)
+        logger.debug(f'Deleted all objects from "{bucket.name}" bucket')
 
     logger.debug('Successfully cleaned S3 data')
 
@@ -174,16 +174,16 @@ def clean_s3_model_data(instance: Model):
         compressed_screenshots_bucket = s3_resource.Bucket('films-compressed-screenshots')
 
         # Deleting specific screenshots folder (e.g. '241/')
-        deleted_screenshots = screenshots_bucket.objects.filter(Prefix='%s/' % instance.pk).delete()
-        deleted_compressed_screenshots = compressed_screenshots_bucket.objects.filter(Prefix='%s/' % instance.pk).delete()
+        deleted_screenshots = screenshots_bucket.objects.filter(Prefix=f'{instance.pk}/').delete()
+        deleted_compressed_screenshots = compressed_screenshots_bucket.objects.filter(Prefix=f'{instance.pk}/').delete()
 
-        logger.debug('Deleted screenshot objects: "%s"' % deleted_screenshots[0]['Deleted'])
-        logger.debug('Deleted compressed screenshot objects: "%s"' % deleted_compressed_screenshots[0]['Deleted'])
+        logger.debug(f'Deleted screenshot objects: "{deleted_screenshots[0]["Deleted"]}"')
+        logger.debug(f'Deleted compressed screenshot objects: "{deleted_compressed_screenshots[0]["Deleted"]}"')
 
     elif isinstance(instance, Actor):
         actors_bucket = s3_resource.Bucket('actors-screenshots')
-        deleted_actors_screenshots = actors_bucket.objects.filter(Prefix='%s/' % instance.pk).delete()
-        logger.debug('Deleted screenshot objects: %s' % deleted_actors_screenshots[0]['Deleted'])
+        deleted_actors_screenshots = actors_bucket.objects.filter(Prefix=f'{instance.pk}/').delete()
+        logger.debug(f'Deleted screenshot objects: {deleted_actors_screenshots[0]["Deleted"]}')
 
     logger.info(f'Successfully cleaned "{instance.__class__.__name__.lower()}s/{instance.pk}" S3 data')
 

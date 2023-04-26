@@ -49,7 +49,7 @@ class GenreSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         logger.info('Creating new Genre instance...')
         genre = Genre.objects.create(**validated_data)
-        logger.info('Successfully created "%s" instance' % str(genre))
+        logger.info(f'Successfully created "{str(genre)}" instance')
         return genre
 
 
@@ -120,7 +120,7 @@ class FilmSerializer(serializers.ModelSerializer):
                                             director__iexact=data['director'])
         if existing_film:
             validation_error_message = 'Film with such parameters (title, director, release date) already exists'
-            logger.warning('Validation error - %s' % validation_error_message)
+            logger.warning(f'Validation error - {validation_error_message}')
             raise serializers.ValidationError(validation_error_message)
         return data
 
