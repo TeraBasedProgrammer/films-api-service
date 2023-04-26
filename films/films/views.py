@@ -1,7 +1,6 @@
 from django.db.models import Q
 from rest_framework import generics
 
-
 from .models import Film, Genre
 from .serializers import FilmSerializer, FilmListSerializer, GenreSerializer
 from .services import clean_s3_model_data

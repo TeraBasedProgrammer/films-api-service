@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 
@@ -6,7 +8,6 @@ from .services import get_cached_imdb_response, initialize_images
 from .validators import validate_imdb_id, validate_image
 from actors.models import Actor
 
-import logging
 
 
 logger = logging.getLogger('logger')

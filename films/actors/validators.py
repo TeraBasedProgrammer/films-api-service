@@ -1,7 +1,6 @@
-from rest_framework.serializers import ValidationError
-from django.core.validators import RegexValidator
-
 import logging
+
+from rest_framework.serializers import ValidationError
 
 logger = logging.getLogger('logger')
 

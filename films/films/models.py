@@ -1,4 +1,5 @@
 from django.db import models
+
 from actors.models import Actor
 from .validators import validate_text, validate_rating, validate_age_restriction, validate_names
 

@@ -1,9 +1,10 @@
+import logging
+
 from rest_framework import serializers
+
 from .models import Playlist
 from films.models import Film
 from films.serializers import FilmListSerializer
-
-import logging
 
 
 logger = logging.getLogger('logger')

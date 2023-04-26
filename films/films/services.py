@@ -1,16 +1,16 @@
 import os
-import requests_cache
 import json
 import pathlib
 import logging
 
+import requests_cache
 from PIL import Image
 from django.conf import settings
 from django.db.models import Model
-from django.core.exceptions import ValidationError
+from rest_framework.exceptions import APIException
+
 from .models import Screenshot, Film
 from actors.models import Actor
-from rest_framework.exceptions import APIException
 
 
 logger = logging.getLogger('logger')

@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 
@@ -6,7 +8,6 @@ from films.models import Film
 from films.validators import validate_image
 from .services import initialize_photo
 
-import logging
 
 logger = logging.getLogger('logger')
 

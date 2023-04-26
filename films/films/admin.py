@@ -1,6 +1,6 @@
 from django.contrib import admin
+
 from .models import Film, Screenshot
-from .serializers import FilmSerializer
 
 
 class ScreenshotInline(admin.StackedInline):
