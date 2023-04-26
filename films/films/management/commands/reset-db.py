@@ -4,7 +4,7 @@ from films.services import clean_s3
 
 import logging
 
-debug_logger = logging.getLogger('logger')
+logger = logging.getLogger('logger')
 
 
 class Command(BaseCommand):
@@ -16,5 +16,5 @@ class Command(BaseCommand):
         # Cleaning all project's custom models (including s3 data)
         for key, value in models_classes.items():
             deleted_count, _ = value.objects.all().delete()
-            debug_logger.debug(f'Cleaned model {key}. Objects deleted: {deleted_count}')
+            logger.debug(f'Cleaned model "%s". Objects deleted: %s' % (key, deleted_count))
         clean_s3()

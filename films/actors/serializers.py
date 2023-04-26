@@ -6,6 +6,10 @@ from films.models import Film
 from films.validators import validate_image
 from .services import initialize_photo
 
+import logging
+
+logger = logging.getLogger('logger')
+
 
 class ActorListSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
@@ -50,6 +54,7 @@ class ActorSerializer(serializers.ModelSerializer):
         return f'https://actors-screenshots.s3.eu-north-1.amazonaws.com/{obj.pk}/photo.{obj.photo_format}'
 
     def create(self, validated_data):
+        logger.info('Creating new Actor instance...')
         # Retrieving photo image
         photo_image = validated_data.pop('photo_image')
 
@@ -59,14 +64,18 @@ class ActorSerializer(serializers.ModelSerializer):
         actor.films.set(films_data)
 
         initialize_photo(photo_image, actor)
+        logger.info(f'Successfully created "{str(actor)}" instance')
         return actor
 
     def to_representation(self, instance):
+        logger.info(f'Serializing "{str(instance)}" related films (for GET request)...')
+
         # Local import to avoid circular import
         from films.serializers import FilmListSerializer
 
         ret = super().to_representation(instance)
         ret['films'] = FilmListSerializer(instance.films.all(), many=True,
                                             context={'request': self.context.get('request')}).data
+        logger.info(f'Successfully serialized "{str(instance)}" related films')
         return ret
 

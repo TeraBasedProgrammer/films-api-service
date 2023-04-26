@@ -1,8 +1,13 @@
 from films.services import create_directory, clear_directory, send_images_to_s3
 from django.conf import settings
 
+import logging
+
+logger = logging.getLogger('logger')
+
 
 def initialize_photo(photo_image, actor):
+    logger.info(f'Preparing "{str(actor)}" photo to sending to S3...')
     file_dir = f'{settings.MEDIA_ROOT}/temp/{actor.pk}/'
     create_directory(file_dir)
 

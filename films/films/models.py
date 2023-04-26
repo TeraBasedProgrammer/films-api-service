@@ -22,6 +22,9 @@ class Film(models.Model):
     age_restriction = models.IntegerField(validators=[validate_age_restriction])
     studio = models.CharField(max_length=50, validators=[validate_text])
 
+    def __str__(self):
+        return self.title
+
 
 class FilmActor(models.Model):
     film = models.ForeignKey(Film, on_delete=models.CASCADE, null=True)

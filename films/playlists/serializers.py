@@ -3,6 +3,11 @@ from .models import Playlist
 from films.models import Film
 from films.serializers import FilmListSerializer
 
+import logging
+
+
+logger = logging.getLogger('logger')
+
 
 class PlaylistListSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
@@ -33,18 +38,24 @@ class PlaylistSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        logger.info('Creating new Playlist instance')
         # Retrieving related films data
         films_data = validated_data.pop('films')
 
         playlist = Playlist.objects.create(**validated_data)
         playlist.films.set(films_data)
+
+        logger.info('Successfully created "%s" instance' % str(playlist))
         return playlist
 
     # Changing representation of films field from just PK's to serialized objects
     def to_representation(self, instance):
+        logger.info(f'Serializing "{str(instance)}" related films (for GET request)...')
         ret = super().to_representation(instance)
         ret['films'] = FilmListSerializer(instance.films.all(), many=True,
                                           context={'request': self.context.get('request')}).data
+
+        logger.info(f'Successfully serialized "{str(instance)}" related films')
         return ret
 
 

@@ -6,6 +6,11 @@ from .services import get_cached_imdb_response, initialize_images
 from .validators import validate_imdb_id, validate_image
 from actors.models import Actor
 
+import logging
+
+
+logger = logging.getLogger('logger')
+
 
 class ScreenshotSerializer(serializers.ModelSerializer):
     # Model fields
@@ -40,6 +45,12 @@ class GenreSerializer(serializers.ModelSerializer):
             'pk',
             'title',
         ]
+
+    def create(self, validated_data):
+        logger.info('Creating new Genre instance...')
+        genre = Genre.objects.create(**validated_data)
+        logger.info('Successfully created "%s" instance' % str(genre))
+        return genre
 
 
 class FilmListSerializer(serializers.ModelSerializer):
@@ -108,12 +119,14 @@ class FilmSerializer(serializers.ModelSerializer):
                                             release_date=data['release_date'],
                                             director__iexact=data['director'])
         if existing_film:
-            raise serializers.ValidationError('Film with such parameters (title, director, release date) already exists')
+            validation_error_message = 'Film with such parameters (title, director, release date) already exists'
+            logger.warning('Validation error - %s' % validation_error_message)
+            raise serializers.ValidationError(validation_error_message)
         return data
 
-
-
     def create(self, validated_data):
+        logger.info('Creating new Film instance...')
+
         # Retrieving and initializing film imDb rating
         imdb_id = validated_data.pop('imdb_id')
         validated_data['imdb_rating'] = get_cached_imdb_response(imdb_id)
@@ -131,10 +144,13 @@ class FilmSerializer(serializers.ModelSerializer):
         film.genres.set(genres_data)
 
         initialize_images(poster_image, screenshots_data, film)
+        logger.info(f'Successfully created "{str(film)}" instance')
         return film
 
     # Changing representation of actors and genres fields from just PK's to serialized objects
     def to_representation(self, instance):
+        logger.info(f'Serializing "{str(instance)}" related actors and geres (for GET request)...')
+
         # Local import to avoid circular import
         from actors.serializers import ActorListSerializer
 
@@ -142,6 +158,8 @@ class FilmSerializer(serializers.ModelSerializer):
         ret['actors'] = ActorListSerializer(instance.actors.all(), many=True,
                                             context={'request': self.context.get('request')}).data
         ret['genres'] = GenreSerializer(instance.genres.all(), many=True).data
+
+        logger.info(f'Successfully serialized "{str(instance)}" related actors and genresS')
         return ret
 
 

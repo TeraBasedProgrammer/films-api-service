@@ -10,6 +10,7 @@ from django.db.models import Model
 from django.core.exceptions import ValidationError
 from .models import Screenshot, Film
 from actors.models import Actor
+from rest_framework.exceptions import APIException
 
 
 logger = logging.getLogger('logger')
@@ -22,8 +23,9 @@ def get_cached_imdb_response(imdb_id) -> str:
     @return: imdb rating string (e.g. '8.80')
     """
     try:
+        logger.info('Retrieving film\'s Imdb rating from Imdb API...')
         session = requests_cache.CachedSession(cache_name=f'{os.path.dirname(__file__)}/cache/imdb-cache', backend='sqlite',
-                                           expire_after=600)
+                                               expire_after=600)
         # fix error: raise ConnectionError(e, request=request)
         # cinema-films-1  | requests.exceptions.ConnectionError: HTTPSConnectionPool(host='imdb-api.com', port=443):
         # Max retries exceeded with url: /en/API/Ratings/k_92xc2azh/tt1375666
@@ -31,12 +33,60 @@ def get_cached_imdb_response(imdb_id) -> str:
         # Failed to establish a new connection: [Errno -3] Try again'))
         response = json.loads((session.get(
             'https://imdb-api.com/en/API/Ratings/k_92xc2azh/%s' % imdb_id).content.decode('utf-8')))
+        logger.info('Successfully retrieved film\'s Imdb rating')
         return response['imDb']
     except ConnectionError:
-        raise ValidationError('Connection error, try again')
+        logger.warning('Connection error (443)')
+        raise APIException('Connection error, try again')
+
+
+def create_directory(path: str):
+    logger.debug('Creating directory "%s"...' % path)
+    try:
+        logger.debug('Successfully created directory "%s"' % path)
+        os.mkdir(path)
+    except FileExistsError:
+        logger.debug('FileExistsError - Directory "%s" already exists' % path)
+        pass
+
+
+def clear_directory(path: str):
+    logger.debug('Deleting directory "%s"...' % path)
+    for file in pathlib.Path(path).iterdir():
+        try:
+            os.remove(file.absolute())
+        except FileNotFoundError:
+            pass
+
+    try:
+        os.rmdir(path)
+    except FileNotFoundError:
+        pass
+    logger.debug('Successfully removed directory "%s"' % path)
+
+
+def send_images_to_s3(directory, bucket, instance):
+    """
+    Sends images to given s3 bucket
+    @param directory: path to directory with images
+    @param bucket: s3 bucket name
+    @param instance: model instance for getting 'pk' field
+    """
+
+    # Credentials and session
+    aws_session = settings.AWS_SESSION
+    s3 = aws_session.client('s3')
+
+    for file in pathlib.Path(directory).iterdir():
+        s3.upload_file(file.absolute(), bucket, f'{instance.pk}/{file.name}')
+        logger.debug('"%s" file was successfully sent to S3' % file.name)
+
+    logger.info('All "%s" files were successfully sent to S3' % str(instance))
 
 
 def initialize_images(poster_image, screenshots_data, film):
+    logger.info(f'Preparing "{str(film)}" images to sending to S3...')
+
     # Path to temp screenshots dir
     file_dir = f'{settings.MEDIA_ROOT}/temp/{film.pk}/'
 
@@ -54,6 +104,7 @@ def initialize_images(poster_image, screenshots_data, film):
     # Poster file creation
     with open(poster_file, 'wb') as f:
         f.write(poster_image.file.read())
+        logger.debug('Created "%s" film poster file' % str(film))
 
     # Screenshots files creation
     for i, screenshot_data in enumerate(screenshots_data):
@@ -78,6 +129,7 @@ def initialize_images(poster_image, screenshots_data, film):
             resized_image.save(f, format=image_format)
 
         Screenshot.objects.create(film=film, file=file_name)
+        logger.debug('Created "%s" file' % file_name)
 
     # s3 files uploading
 
@@ -87,22 +139,6 @@ def initialize_images(poster_image, screenshots_data, film):
 
     clear_directory(file_dir)
     clear_directory(compressed_file_dir)
-
-
-def send_images_to_s3(directory, bucket, instance):
-    """
-    Sends images to given s3 bucket
-    @param directory: path to directory with images
-    @param bucket: s3 bucket name
-    @param instance: model instance for getting 'pk' field
-    """
-
-    # Credentials and session
-    aws_session = settings.AWS_SESSION
-    s3 = aws_session.client('s3')
-
-    for file in pathlib.Path(directory).iterdir():
-        s3.upload_file(file.absolute(), bucket, f'{instance.pk}/{file.name}')
 
 
 def clean_s3():
@@ -120,7 +156,7 @@ def clean_s3():
         bucket.objects.all().delete()
         logger.debug('Deleted all objects from "%s" bucket' % bucket.name)
 
-    logger.debug('Successfully cleaned s3 data')
+    logger.debug('Successfully cleaned S3 data')
 
 
 def clean_s3_model_data(instance: Model):
@@ -141,32 +177,14 @@ def clean_s3_model_data(instance: Model):
         deleted_screenshots = screenshots_bucket.objects.filter(Prefix='%s/' % instance.pk).delete()
         deleted_compressed_screenshots = compressed_screenshots_bucket.objects.filter(Prefix='%s/' % instance.pk).delete()
 
-        logger.debug('Deleted screenshot objects: %s' % deleted_screenshots[0]['Deleted'])
-        logger.debug('Deleted compressed screenshot objects: %s' % deleted_compressed_screenshots[0]['Deleted'])
+        logger.debug('Deleted screenshot objects: "%s"' % deleted_screenshots[0]['Deleted'])
+        logger.debug('Deleted compressed screenshot objects: "%s"' % deleted_compressed_screenshots[0]['Deleted'])
 
     elif isinstance(instance, Actor):
         actors_bucket = s3_resource.Bucket('actors-screenshots')
         deleted_actors_screenshots = actors_bucket.objects.filter(Prefix='%s/' % instance.pk).delete()
         logger.debug('Deleted screenshot objects: %s' % deleted_actors_screenshots[0]['Deleted'])
 
-    logger.info(f'Successfully cleaned {instance.__class__.__name__.lower()}s/{instance.pk} S3 data')
+    logger.info(f'Successfully cleaned "{instance.__class__.__name__.lower()}s/{instance.pk}" S3 data')
 
 
-def create_directory(path: str):
-    try:
-        os.mkdir(path)
-    except FileExistsError:
-        pass
-
-
-def clear_directory(path: str):
-    for file in pathlib.Path(path).iterdir():
-        try:
-            os.remove(file.absolute())
-        except FileNotFoundError:
-            pass
-
-    try:
-        os.rmdir(path)
-    except FileNotFoundError:
-        pass
