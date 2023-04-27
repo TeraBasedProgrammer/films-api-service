@@ -6,7 +6,9 @@ RUN go install github.com/cosmtrek/air@latest && \
     export GOPATH=$HOME/xxxxx && \
     export PATH=$PATH:$GOROOT/bin:$GOPATH/bin && \
     export PATH=$PATH:$(go env GOPATH)/bin
+
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 CMD ["air", "-c", ".air.toml"]
+#CMD  while true; do sleep 1; done

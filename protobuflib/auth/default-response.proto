@@ -1,0 +1,10 @@
+syntax = "proto3";
+package auth;
+
+option go_package = "github.com/anton-uvarenko/cinema/authorization-service/protobufs/auth";
+
+message JwtResponse {
+  string jwt = 1;
+}
+
+message Empty {}

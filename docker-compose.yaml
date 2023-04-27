@@ -2,38 +2,39 @@ version: '3.8'
 
 
 services:
-  # authorization:
-  #   build:
-  #     context: ./authorization-service
-  #     dockerfile: authorization-service.dockerfile
-  #   env_file:
-  #     - "./authorization-service/.env"
-  #   volumes:
-  #     - ./authorization-service:/app
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   ports:
-  #     -ommand: sudo su postgres "8080:80"
-  #   networks:
-  #     - local
-
-  films:
-    build: ./films
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - ./films/:/films/
-    ports:
-      - 8000:8000
+  broker:
+    build:
+      context: ./broker
+      dockerfile: broker-service.dockerfile
     env_file:
-      - ./films/.env 
+      - "./broker/.env"
+    volumes:
+      - ./broker:/app
+    ports:
+      - "8080:80"
+    networks:
+      - local
+    depends_on:
+      - authorization
+
+  authorization:
+    container_name: auth
+    build:
+      context: ./authorization-service
+      dockerfile: authorization-service.dockerfile
+    env_file:
+      - "./authorization-service/.env"
+    volumes:
+      - ./authorization-service:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - local
 
   postgres:
     container_name: "pg-db"
     image: postgres
-    user: postgres
     ports:
       - "5432:5432"
     healthcheck:
@@ -46,11 +47,7 @@ services:
       POSTGRES_PASSWORD: "123456"
     networks:
       - local
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
 
 networks:
   local:
-
-volumes:
-  postgres_data:
+    driver: bridge
