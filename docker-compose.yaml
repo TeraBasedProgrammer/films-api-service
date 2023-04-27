@@ -2,21 +2,21 @@ version: '3.8'
 
 
 services:
-#   authorization:
-#     build:
-#       context: ./authorization-service
-#       dockerfile: authorization-service.dockerfile
-#     env_file:
-#       - "./authorization-service/.env"
-#     volumes:
-#       - ./authorization-service:/app
-#     depends_on:
-#       postgres:
-#         condition: service_healthy
-#     ports:
-#       -command: sudo su postgres "8080:80"
-#     networks:
-#       - local
+  # authorization:
+  #   build:
+  #     context: ./authorization-service
+  #     dockerfile: authorization-service.dockerfile
+  #   env_file:
+  #     - "./authorization-service/.env"
+  #   volumes:
+  #     - ./authorization-service:/app
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   ports:
+  #     -command: sudo su postgres "8080:80"
+  #   networks:
+  #     - local
 
   films:
     build: ./films
