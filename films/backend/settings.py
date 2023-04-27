@@ -116,7 +116,7 @@ REST_FRAMEWORK = {
 
 AWS_SESSION = boto3.Session(
         aws_access_key_id=os.environ.get('ACCESS_KEY'),
-        aws_secret_access_key=os.environ.get('SECRET_KEY'),
+        aws_secret_access_key=os.environ.get('AWS_SECRET_KEY'),
     )
 
 DJANGO_LOG_LEVEL = 'DEBUG' if DEBUG == 'True' else 'INFO'

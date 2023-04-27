@@ -186,5 +186,4 @@ def clean_s3_model_data(instance: Model):
         logger.debug(f'Deleted screenshot objects: {deleted_actors_screenshots[0]["Deleted"]}')
 
     logger.info(f'Successfully cleaned "{instance.__class__.__name__.lower()}s/{instance.pk}" S3 data')
-
-
+    
