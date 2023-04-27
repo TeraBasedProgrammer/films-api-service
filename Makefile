@@ -18,6 +18,11 @@ dbuild-auth: build-auth
 	cd ./authorization-service && docker build -f authorization-service.production.dockerfile -t uvarenko/cinotes-auth:test .
 	docker push uvarenko/cinotes-auth:test
 
+dbuild-films:
+	@echo "Building films production dockerfile"
+	cd ./films && docker build -f Dockerfile -t ilyadronov/cinotes-films:1.0.0 .
+	docker push ilyadronov/cinotes-films:1.0.0
+
 start:
 	docker compose up -d
 
