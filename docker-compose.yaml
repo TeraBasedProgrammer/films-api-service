@@ -51,7 +51,6 @@ services:
 
 networks:
   local:
-    driver: bridge
 
 volumes:
   postgres_data:
