@@ -70,8 +70,8 @@ DATABASES = {
         "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
         "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
         "USER": os.environ.get("SQL_USER"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD"),
-        "HOST": os.environ.get("SQL_HOST", "localhost"),
+        "PASSWORD": os.environ.get('SQL_PASSWORD') if DEBUG == 'True' else os.environ.get("SQL_PROD_PASSWORD"),
+        "HOST": os.environ.get('SQL_HOST') if DEBUG == 'True' else os.environ.get("SQL_PROD_HOST"),
         "PORT": os.environ.get("SQL_PORT", "5432"),
     }
 }
@@ -114,7 +114,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
-if os.environ.get('ACCESS_KEY') is None or os.environ.get('AWS_SECRET_KEY') is None:
+if not os.environ.get('ACCESS_KEY') or not os.environ.get('AWS_SECRET_KEY'):
     AWS_SESSION = boto3.Session()
 else:
     AWS_SESSION = boto3.Session(

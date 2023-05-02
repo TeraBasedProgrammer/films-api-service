@@ -28,3 +28,17 @@ start:
 
 stop:
 	docker compose stop
+
+down:
+	docker compose down
+
+restart:
+	docker compose restart
+
+rebuild:
+	docker compose dsown
+	docker compose up -d --build
+	docker image prune
+
+logs:
+	docker compose logs -f

@@ -102,7 +102,7 @@ class GenreSearchView(generics.ListAPIView):
 
     def get_queryset(self):
         query = self.request.GET.get("q")
-        object_list = Film.objects.filter(
+        object_list = Genre.objects.filter(
              Q(title__icontains=query)
         )
         return object_list
