@@ -2,6 +2,7 @@ import logging
 
 from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
+from django.conf import settings
 
 from .models import Film, Screenshot, Genre
 from .services import get_cached_imdb_response, initialize_images
@@ -11,6 +12,29 @@ from actors.models import Actor
 
 
 logger = logging.getLogger('logger')
+
+# Custom URL class to handle remote AWS host
+class CustomHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+    def __init__(self, *args, **kwargs):
+        super(CustomHyperlinkedIdentityField, self).__init__(*args, **kwargs)
+       
+    def to_representation(self, value):
+        request = self.context.get('request', None)
+        if request is not None:
+            if settings.DEBUG:
+                scheme = request.scheme
+                host = request.get_host()
+                print(host)
+                print(request.META['SERVER_PORT'])
+                if ':' not in host:
+                    host += ':' + request.META['SERVER_PORT']
+            else:
+                scheme = settings.REMOTE_SCHEME
+                host = settings.REMOTE_HOST
+            self.context['request']._request.META['HTTP_HOST'] = host
+            # self.context['request']._request.scheme = scheme
+        return super(CustomHyperlinkedIdentityField, self).to_representation(value)
+
 
 
 class ScreenshotSerializer(serializers.ModelSerializer):
@@ -56,10 +80,12 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class FilmListSerializer(serializers.ModelSerializer):
     # Additional fields
-    url = serializers.HyperlinkedIdentityField(
+    url = CustomHyperlinkedIdentityField(
         view_name='film_retrieve',
         lookup_field='pk'
     )
+
+
     poster_file = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -75,7 +101,7 @@ class FilmListSerializer(serializers.ModelSerializer):
 
     def get_poster_file(self, obj):
         return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/poster.{obj.poster_format}'
-
+    
 
 class FilmSerializer(serializers.ModelSerializer):
     # Additional fields

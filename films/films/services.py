@@ -167,7 +167,7 @@ def clean_s3_model_data(instance: Model):
     # Initializing S3 session variables
     logger.info('Connecting to Amazon S3...')
     aws_session = settings.AWS_SESSION
-    s3_resource = aws_session.rsource('s3')
+    s3_resource = aws_session.resource('s3')
 
     if isinstance(instance, Film):
         screenshots_bucket = s3_resource.Bucket('films-screenshots')

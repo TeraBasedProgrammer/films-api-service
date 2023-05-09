@@ -8,10 +8,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
-DEBUG = os.environ.get("DEBUG")
+DEBUG = os.environ.get("DEBUG", "False").lower() == 'true'
 
-ALLOWED_HOSTS = []    # os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", 'localhost').split(", ")
 
+# Remote AWS host
+REMOTE_HOST = ALLOWED_HOSTS[-1]
+
+REMOTE_SCHEME = 'https'
 
 # Application definition
 
@@ -70,8 +74,8 @@ DATABASES = {
         "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
         "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
         "USER": os.environ.get("SQL_USER"),
-        "PASSWORD": os.environ.get('SQL_PASSWORD') if DEBUG == 'True' else os.environ.get("SQL_PROD_PASSWORD"),
-        "HOST": os.environ.get('SQL_HOST') if DEBUG == 'True' else os.environ.get("SQL_PROD_HOST"),
+        "PASSWORD": os.environ.get('SQL_PASSWORD') if DEBUG else os.environ.get("SQL_PROD_PASSWORD"),
+        "HOST": os.environ.get('SQL_HOST') if DEBUG else os.environ.get("SQL_PROD_HOST"),
         "PORT": os.environ.get("SQL_PORT", "5432"),
     }
 }
@@ -122,7 +126,7 @@ else:
         aws_secret_access_key=os.environ.get('AWS_SECRET_KEY'),
     )
 
-DJANGO_LOG_LEVEL = 'DEBUG' if DEBUG == 'True' else 'INFO'
+DJANGO_LOG_LEVEL = 'DEBUG' if DEBUG else 'INFO'
 
 LOGGING = {
     "version": 1,

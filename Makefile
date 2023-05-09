@@ -36,7 +36,7 @@ restart:
 	docker compose restart
 
 rebuild:
-	docker compose dsown
+	docker compose down
 	docker compose up -d --build
 	docker image prune
 
