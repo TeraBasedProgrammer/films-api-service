@@ -7,13 +7,14 @@ from .models import Actor
 from films.models import Film
 from films.validators import validate_image
 from .services import initialize_photo
+from films.serializers import CustomHyperlinkedIdentityField
 
 
 logger = logging.getLogger('logger')
 
 
 class ActorListSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(
+    url = CustomHyperlinkedIdentityField(
         view_name='actor_retrieve',
         lookup_field='pk'
     )

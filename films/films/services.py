@@ -109,6 +109,7 @@ def initialize_images(poster_image, screenshots_data, film):
     # Screenshots files creation
     for i, screenshot_data in enumerate(screenshots_data):
         image_data = screenshot_data.pop('image')
+
         image_format = image_data.content_type.split("/")[1]
 
         # Name of the file (e.g. 'screenshot-1.png')
@@ -143,7 +144,7 @@ def initialize_images(poster_image, screenshots_data, film):
 
 def clean_s3():
     """
-    Cleans all s3 buckets when program starts
+    Cleans all s3 buckets when program starts (DEBUG ONLY)
     """
     logger.debug('Connecting to Amazon S3...')
     aws_session = settings.AWS_SESSION

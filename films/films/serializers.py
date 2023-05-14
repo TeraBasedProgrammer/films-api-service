@@ -22,17 +22,13 @@ class CustomHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
         request = self.context.get('request', None)
         if request is not None:
             if settings.DEBUG:
-                scheme = request.scheme
                 host = request.get_host()
-                print(host)
                 print(request.META['SERVER_PORT'])
                 if ':' not in host:
                     host += ':' + request.META['SERVER_PORT']
             else:
-                scheme = settings.REMOTE_SCHEME
                 host = settings.REMOTE_HOST
             self.context['request']._request.META['HTTP_HOST'] = host
-            # self.context['request']._request.scheme = scheme
         return super(CustomHyperlinkedIdentityField, self).to_representation(value)
 
 
@@ -136,7 +132,7 @@ class FilmSerializer(serializers.ModelSerializer):
             'imdb_id',
             'screenshots',
         ]
-
+    
     def get_poster_file(self, obj):
         return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/poster.{obj.poster_format}'
 
