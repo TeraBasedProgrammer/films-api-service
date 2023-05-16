@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.core.management.base import BaseCommand
+
 import films.models as models
 from films.services import clean_s3_model_data
 
@@ -17,8 +19,9 @@ class Command(BaseCommand):
         for key, value in models_classes.items():
             instances = value.objects.all()
 
-            for instance in instances:
-                clean_s3_model_data(instance) 
+            if not settings.DEBUG:
+                for instance in instances:
+                    clean_s3_model_data(instance)
 
             deleted_count, _ = instances.delete()
             logger.debug(f'Cleaned model "{key}". Objects deleted: {deleted_count}')

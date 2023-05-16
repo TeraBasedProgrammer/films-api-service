@@ -78,7 +78,7 @@ def send_images_to_s3(directory, bucket, instance):
     s3 = aws_session.client('s3')
 
     if settings.DEBUG:
-        logger.debug(f'App is in the debug mode, nothing was actually sent to S3')
+        logger.debug(f'App is in debug mode, nothing was actually sent to S3')
         return
 
     for file in pathlib.Path(directory).iterdir():

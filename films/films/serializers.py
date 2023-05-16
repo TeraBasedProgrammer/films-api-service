@@ -10,8 +10,8 @@ from .validators import validate_imdb_id, validate_image
 from actors.models import Actor
 
 
-
 logger = logging.getLogger('logger')
+
 
 # Custom URL class to handle remote AWS host
 class CustomHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
@@ -23,7 +23,6 @@ class CustomHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
         if request is not None:
             if settings.DEBUG:
                 host = request.get_host()
-                print(request.META['SERVER_PORT'])
                 if ':' not in host:
                     host += ':' + request.META['SERVER_PORT']
             else:

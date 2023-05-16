@@ -1,14 +1,22 @@
 from django.db.models import Q
 from rest_framework import generics
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
 
 from .models import Film, Genre
 from .serializers import FilmSerializer, FilmListSerializer, GenreSerializer
 from .services import clean_s3_model_data
+from .filters import filter_films
 
 
 # Films views
 class FilmListCreateView(generics.ListCreateAPIView):
     queryset = Film.objects.all()
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        filtered_queryset = filter_films(queryset, self.request.GET)
+        return filtered_queryset
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
