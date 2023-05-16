@@ -8,7 +8,7 @@ from .models import Film
 def filter_films(queryset: QuerySet[Film], request) -> QuerySet[Film]:
     from_date_q = request.get('release_date_after')
     to_date_q = request.get('release_date_before')
-    country = request.get('country')
+    country = request.getlist('country')
     genres = request.getlist('genre')
     order_by = request.get('order_by')
 
@@ -28,7 +28,7 @@ def filter_films(queryset: QuerySet[Film], request) -> QuerySet[Film]:
         return queryset
 
     if country:
-        queryset = queryset.filter(country__icontains=country).order_by(order_by)
+        queryset = queryset.filter(country__in=country).order_by(order_by)
         return queryset
 
     if genres:
