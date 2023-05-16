@@ -77,6 +77,10 @@ def send_images_to_s3(directory, bucket, instance):
     aws_session = settings.AWS_SESSION
     s3 = aws_session.client('s3')
 
+    if settings.DEBUG:
+        logger.debug(f'App is in the debug mode, nothing was actually sent to S3')
+        return
+
     for file in pathlib.Path(directory).iterdir():
         s3.upload_file(file.absolute(), bucket, f'{instance.pk}/{file.name}')
         logger.debug(f'"{file.name}" file was successfully sent to S3')
@@ -134,7 +138,6 @@ def initialize_images(poster_image, screenshots_data, film):
 
     # s3 files uploading
 
-    # Credentials and session
     send_images_to_s3(file_dir, 'films-screenshots', film)
     send_images_to_s3(compressed_file_dir, 'films-compressed-screenshots', film)
 
