@@ -53,9 +53,9 @@ class ActorSearchView(generics.ListAPIView):
     serializer_class = ActorListSerializer
 
     def get_queryset(self):
-        query = self.request.GET.get("q")
+        query = self.request.GET.get("q", default="")
         object_list = Actor.objects.filter(
-             Q(title__icontains=query)
+             Q(name__icontains=query)
         )
         return object_list
 

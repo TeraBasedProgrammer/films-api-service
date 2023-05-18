@@ -48,7 +48,7 @@ class FilmSearchView(generics.ListAPIView):
     serializer_class = PlaylistListSerializer
 
     def get_queryset(self):
-        query = self.request.GET.get("q")
+        query = self.request.GET.get("q", default="")
         object_list = Playlist.objects.filter(
             Q(title__icontains=query)
         )

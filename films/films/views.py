@@ -64,7 +64,7 @@ class FilmSearchView(generics.ListAPIView):
     serializer_class = FilmListSerializer
 
     def get_queryset(self):
-        query = self.request.GET.get("q")
+        query = self.request.GET.get("q", default="")
         object_list = Film.objects.filter(
              Q(title__icontains=query)
         )
@@ -112,7 +112,7 @@ class GenreSearchView(generics.ListAPIView):
     serializer_class = GenreSerializer
 
     def get_queryset(self):
-        query = self.request.GET.get("q")
+        query = self.request.GET.get("q", default="")
         object_list = Genre.objects.filter(
              Q(title__icontains=query)
         )
