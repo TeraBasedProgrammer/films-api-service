@@ -2,6 +2,9 @@ from django.db.models import Q
 from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
 
 from .models import Film, Genre
 from .serializers import FilmSerializer, FilmListSerializer, GenreSerializer
@@ -117,3 +120,10 @@ class GenreSearchView(generics.ListAPIView):
 
 
 genre_search = GenreSearchView.as_view()
+
+
+@api_view(['GET'])
+def country_list_view(request):
+    queryset = Film.objects.order_by('country').distinct('country').values('country')
+    return Response({"countries": [country['country'] for country in queryset]})
+

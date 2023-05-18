@@ -1,7 +1,8 @@
 from django.urls import path
 
 from .views import (film_list_create, film_retrieve, film_update, film_delete, film_search,
-                    genre_list_create, genre_retrieve, genre_update, genre_delete, genre_search)
+                    genre_list_create, genre_retrieve, genre_update, genre_delete, genre_search,
+                    country_list_view)
 
 urlpatterns = [
     # films
@@ -18,4 +19,6 @@ urlpatterns = [
     path('genres/<int:pk>/delete', genre_delete),
     path('genres/search/', genre_search),
 
+    # countries
+    path('countries/', country_list_view),
 ]
