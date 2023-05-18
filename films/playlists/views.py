@@ -43,7 +43,7 @@ class PlaylistDeleteAPIView(generics.DestroyAPIView):
 playlist_delete = PlaylistDeleteAPIView.as_view()
 
 
-class FilmSearchView(generics.ListAPIView):
+class PlaylistSearchView(generics.ListAPIView):
     model = Playlist
     serializer_class = PlaylistListSerializer
 
@@ -55,4 +55,4 @@ class FilmSearchView(generics.ListAPIView):
         return object_list
 
 
-playlist_search = FilmSearchView.as_view()
+playlist_search = PlaylistSearchView.as_view()
