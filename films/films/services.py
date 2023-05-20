@@ -26,15 +26,10 @@ def get_cached_imdb_response(imdb_id) -> str:
         logger.info('Retrieving film\'s Imdb rating from Imdb API...')
         session = requests_cache.CachedSession(cache_name=f'{os.path.dirname(__file__)}/cache/imdb-cache', backend='sqlite',
                                                expire_after=600)
-        # fix error: raise ConnectionError(e, request=request)
-        # cinema-films-1  | requests.exceptions.ConnectionError: HTTPSConnectionPool(host='imdb-api.com', port=443):
-        # Max retries exceeded with url: /en/API/Ratings/k_92xc2azh/tt1375666
-        # (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x7f62410b6290>:
-        # Failed to establish a new connection: [Errno -3] Try again'))
         response = json.loads((session.get(
             'https://imdb-api.com/en/API/Ratings/k_92xc2azh/%s' % imdb_id).content.decode('utf-8')))
         logger.info('Successfully retrieved film\'s Imdb rating')
-        if response['errorMessage']:
+        if 'Maximum usage' in actor_json['errorMessage']:
             raise ValidationError(f"Imdb api error: {response['errorMessage']}")
         return response['imDb']
     except ConnectionError:
