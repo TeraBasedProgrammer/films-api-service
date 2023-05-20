@@ -6,7 +6,10 @@ from films.validators import validate_text, validate_names
 
 class Actor(models.Model):
     name = models.CharField(max_length=50, validators=[validate_names], unique=True)
-    age = models.IntegerField(validators=[validate_age])
+    # age = models.IntegerField(validators=[validate_age])
+    birth_date = models.DateField()
+    death_date = models.DateField(null=True)
+
     description = models.TextField(validators=[validate_text])
 
     # Many-to-many relation for listing related films

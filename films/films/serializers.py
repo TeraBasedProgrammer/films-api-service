@@ -80,7 +80,6 @@ class FilmListSerializer(serializers.ModelSerializer):
         lookup_field='pk'
     )
 
-
     poster_file = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -123,7 +122,7 @@ class FilmSerializer(serializers.ModelSerializer):
             'genres',
             'director',
             'description',
-            'age_restriction',
+            'content_rating',
             'imdb_rating',
             'studio',
 

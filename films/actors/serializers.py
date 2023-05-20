@@ -45,7 +45,8 @@ class ActorSerializer(serializers.ModelSerializer):
         fields = [
             'pk',
             'name',
-            'age',
+            'birth_date',
+            'death_date',
             'description',
             'photo_file',
             'photo_image',

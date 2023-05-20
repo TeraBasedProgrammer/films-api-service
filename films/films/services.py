@@ -7,7 +7,7 @@ import requests_cache
 from PIL import Image
 from django.conf import settings
 from django.db.models import Model
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError
 
 from .models import Screenshot, Film
 from actors.models import Actor
@@ -34,6 +34,8 @@ def get_cached_imdb_response(imdb_id) -> str:
         response = json.loads((session.get(
             'https://imdb-api.com/en/API/Ratings/k_92xc2azh/%s' % imdb_id).content.decode('utf-8')))
         logger.info('Successfully retrieved film\'s Imdb rating')
+        if response['errorMessage']:
+            raise ValidationError(f"Imdb api error: {response['errorMessage']}")
         return response['imDb']
     except ConnectionError:
         logger.warning('Connection error (443)')
@@ -130,7 +132,10 @@ def initialize_images(poster_image, screenshots_data, film):
 
             # Image compressing
             image = Image.open(file_path)
+            # image_size = image.size
+            # resized_image = image.resize(( image_size[0] * (176 / image_size[1]) ,176))
             resized_image = image.resize((314, 176))
+
             resized_image.save(f, format=image_format)
 
         Screenshot.objects.create(film=film, file=file_name)
