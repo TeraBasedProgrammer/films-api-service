@@ -26,7 +26,7 @@ class Film(models.Model):
     # New age rating field
     # TODO: add validation (later)
     content_rating = models.CharField(max_length=25)
-    studio = models.CharField(max_length=50, validators=[validate_text])
+    studio = models.CharField(max_length=100, validators=[validate_text])
 
     def __str__(self):
         return self.title

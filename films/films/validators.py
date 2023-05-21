@@ -47,8 +47,8 @@ def validate_age_restriction(value):
 
 def validate_names(value):
     language_validator = RegexValidator(
-        regex=r'^[A-Za-zА-Яа-яЇїІіЄєҐґ\',\- ]+$',
-        message='Text format is not allowed',
+        regex=r'^[A-Za-zА-Яа-яЇїІіЄєҐґÉé\',.\- ]+$',
+        message='Text format is not allowed. Only english and ukrainian letters and special characters (\',.-) are allowed',
     )
 
     try:
@@ -60,8 +60,8 @@ def validate_names(value):
 
 def validate_text(value):
     language_validator = RegexValidator(
-        regex=r'^[A-Za-z0-9А-Яа-яЇїІіЄєҐґ:?!\-\+\(\)\.,ʼ=№#& ]+$',
-        message='Text format is not allowed',
+        regex=r'^[A-Za-z0-9А-Яа-яЇїІіЄєҐґÉéâüÜáô:?!\\\-\+\(\)\.»«,ʼ/=№#;& "\']+$',
+        message='Text format is not allowed. Only english and ukrainian letters, numbers and special characters are allowed',
     )
     
     try:

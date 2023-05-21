@@ -29,7 +29,7 @@ def get_cached_imdb_response(imdb_id) -> str:
         response = json.loads((session.get(
             'https://imdb-api.com/en/API/Ratings/k_92xc2azh/%s' % imdb_id).content.decode('utf-8')))
         logger.info('Successfully retrieved film\'s Imdb rating')
-        if 'Maximum usage' in actor_json['errorMessage']:
+        if 'Maximum usage' in response['errorMessage']:
             raise ValidationError(f"Imdb api error: {response['errorMessage']}")
         return response['imDb']
     except ConnectionError:
@@ -127,9 +127,10 @@ def initialize_images(poster_image, screenshots_data, film):
 
             # Image compressing
             image = Image.open(file_path)
-            # image_size = image.size
-            # resized_image = image.resize(( image_size[0] * (176 / image_size[1]) ,176))
-            resized_image = image.resize((314, 176))
+            image_size = image.size
+            resized_width = round(image_size[0] * (176 / image_size[1]))
+            resized_image = image.resize((resized_width, 176))
+            # resized_image = image.resize((314, 176))
 
             resized_image.save(f, format=image_format)
 
@@ -181,8 +182,9 @@ def clean_s3_model_data(instance: Model):
         deleted_screenshots = screenshots_bucket.objects.filter(Prefix=f'{instance.pk}/').delete()
         deleted_compressed_screenshots = compressed_screenshots_bucket.objects.filter(Prefix=f'{instance.pk}/').delete()
 
-        logger.debug(f'Deleted screenshot objects: "{deleted_screenshots[0]["Deleted"]}"')
-        logger.debug(f'Deleted compressed screenshot objects: "{deleted_compressed_screenshots[0]["Deleted"]}"')
+        if deleted_screenshots and deleted_compressed_screenshots:
+            logger.debug(f'Deleted screenshot objects: "{deleted_screenshots[0]["Deleted"]}"')
+            logger.debug(f'Deleted compressed screenshot objects: "{deleted_compressed_screenshots[0]["Deleted"]}"')
 
     elif isinstance(instance, Actor):
         actors_bucket = s3_resource.Bucket('actors-screenshots')

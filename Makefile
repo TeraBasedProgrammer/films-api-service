@@ -42,3 +42,15 @@ rebuild:
 
 logs:
 	docker compose logs -f
+
+
+# Django
+makemigr:
+	python films/manage.py makemigrations
+
+
+migrate:
+	python films/manage.py migrate
+
+films-docker-shell:
+	docker compose exec films sh
