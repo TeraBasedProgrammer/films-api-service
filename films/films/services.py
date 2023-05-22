@@ -150,6 +150,9 @@ def clean_s3():
     """
     Cleans all s3 buckets when program starts (DEBUG ONLY)
     """
+    if not settings.DEBUG:
+        return
+
     logger.debug('Connecting to Amazon S3...')
     aws_session = settings.AWS_SESSION
 
@@ -168,8 +171,10 @@ def clean_s3_model_data(instance: Model):
     """
     Cleans specific film / actor s3 data
     """
+    if settings.DEBUG:
+        logger.debug(f'App is in debug mode, nothing was actually deleted from S3')
+        return
 
-    # Initializing S3 session variables
     logger.info('Connecting to Amazon S3...')
     aws_session = settings.AWS_SESSION
     s3_resource = aws_session.resource('s3')
@@ -182,9 +187,8 @@ def clean_s3_model_data(instance: Model):
         deleted_screenshots = screenshots_bucket.objects.filter(Prefix=f'{instance.pk}/').delete()
         deleted_compressed_screenshots = compressed_screenshots_bucket.objects.filter(Prefix=f'{instance.pk}/').delete()
 
-        if deleted_screenshots and deleted_compressed_screenshots:
-            logger.debug(f'Deleted screenshot objects: "{deleted_screenshots[0]["Deleted"]}"')
-            logger.debug(f'Deleted compressed screenshot objects: "{deleted_compressed_screenshots[0]["Deleted"]}"')
+        logger.debug(f'Deleted screenshot objects: "{deleted_screenshots[0]["Deleted"]}"')
+        logger.debug(f'Deleted compressed screenshot objects: "{deleted_compressed_screenshots[0]["Deleted"]}"')
 
     elif isinstance(instance, Actor):
         actors_bucket = s3_resource.Bucket('actors-screenshots')
