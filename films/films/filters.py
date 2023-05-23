@@ -31,7 +31,7 @@ def filter_films(queryset: QuerySet[Film], request) -> QuerySet[Film]:
         queryset = queryset.filter(country__icontains=country).order_by(order_by)
         # return queryset
 
-    if genres:
+    if genres and genres[0]:
         queryset = queryset.filter(genres__title__in=genres).order_by(order_by).distinct()
         # return queryset
 
