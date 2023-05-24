@@ -100,42 +100,52 @@ def initialize_images(poster_image, screenshots_data, film):
     # Creating film (pk) compressed screenshots folder
     create_directory(compressed_file_dir)
 
-    poster_file = f'{file_dir}poster.{film.poster_format}'
+    if poster_image:
+        poster_file = f'{file_dir}poster.{film.poster_format}'
+        poster_compressed_file = f'{file_dir}compressed-poster.{film.poster_format}'
 
-    # Poster file creation
-    with open(poster_file, 'wb') as f:
-        f.write(poster_image.file.read())
-        logger.debug(f'Created "{str(film)}" film poster file')
+        # Poster file creation
+        with open(poster_file, 'wb') as f:
+            f.write(poster_image.file.read())
+            logger.info(f'Created "{str(film)}" film poster file')
+
+        with open(poster_compressed_file, 'wb') as f:
+            # Image compressing
+            image = Image.open(poster_file)
+            resized_image = image.resize((270, 400))
+
+            resized_image.save(f, format=film.poster_format)
+            logger.info(f'Created "{str(film)}" film compressed poster file')
 
     # Screenshots files creation
-    for i, screenshot_data in enumerate(screenshots_data):
-        image_data = screenshot_data.pop('image')
+    if screenshots_data:
+        for i, screenshot_data in enumerate(screenshots_data):
+            image_data = screenshot_data.pop('image')
 
-        image_format = image_data.content_type.split("/")[1]
+            image_format = image_data.content_type.split("/")[1]
 
-        # Name of the file (e.g. 'screenshot-1.png')
-        file_name = f'screenshot-{i+1}.{image_format}'
+            # Name of the file (e.g. 'screenshot-1.png')
+            file_name = f'screenshot-{i+1}.{image_format}'
 
-        file_path = f'{file_dir}{file_name}'
-        compressed_file_path = f'{compressed_file_dir}{file_name}'
+            file_path = f'{file_dir}{file_name}'
+            compressed_file_path = f'{compressed_file_dir}{file_name}'
 
-        with open(file_path, 'wb') as f:
-            f.write(image_data.file.read())
+            with open(file_path, 'wb') as f:
+                f.write(image_data.file.read())
 
-        with open(compressed_file_path, 'wb') as f:
-            f.write(image_data.file.read())
+            with open(compressed_file_path, 'wb') as f:
+                f.write(image_data.file.read())
 
-            # Image compressing
-            image = Image.open(file_path)
-            image_size = image.size
-            resized_width = round(image_size[0] * (176 / image_size[1]))
-            resized_image = image.resize((resized_width, 176))
-            # resized_image = image.resize((314, 176))
+                # Image compressing
+                image = Image.open(file_path)
+                image_size = image.size
+                resized_width = round(image_size[0] * (176 / image_size[1]))
+                resized_image = image.resize((resized_width, 176))
 
-            resized_image.save(f, format=image_format)
+                resized_image.save(f, format=image_format)
 
-        Screenshot.objects.create(film=film, file=file_name)
-        logger.debug(f'Created "{file_name}" file')
+            Screenshot.objects.create(film=film, file=file_name)
+            logger.debug(f'Created "{file_name}" file')
 
     # s3 files uploading
 

@@ -31,7 +31,6 @@ class CustomHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
         return super(CustomHyperlinkedIdentityField, self).to_representation(value)
 
 
-
 class ScreenshotSerializer(serializers.ModelSerializer):
     # Model fields
     file = serializers.SerializerMethodField(read_only=True)
@@ -81,6 +80,7 @@ class FilmListSerializer(serializers.ModelSerializer):
     )
 
     poster_file = serializers.SerializerMethodField(read_only=True)
+    compressed_poster_file = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Film
@@ -90,18 +90,23 @@ class FilmListSerializer(serializers.ModelSerializer):
 
             # Additional fields
             'poster_file',
+            'compressed_poster_file',
             'url',
         ]
 
     def get_poster_file(self, obj):
         return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/poster.{obj.poster_format}'
-    
+
+    def get_compressed_poster_file(self, obj):
+        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/compressed-poster.{obj.poster_format}'
+
 
 class FilmSerializer(serializers.ModelSerializer):
     # Additional fields
     imdb_id = serializers.CharField(write_only=True, validators=[validate_imdb_id])
     screenshots = ScreenshotSerializer(many=True)
     poster_file = serializers.SerializerMethodField(read_only=True)
+    compressed_poster_file = serializers.SerializerMethodField(read_only=True)
     poster_image = Base64ImageField(write_only=True, validators=[validate_image])
 
     # Field for listing related actors (drf doesn't see this field from model, so it has to be in serializer)
@@ -114,6 +119,7 @@ class FilmSerializer(serializers.ModelSerializer):
             'pk',
             'title',
             'poster_file',
+            'compressed_poster_file',
             'poster_image',
             'rating',
             'country',
@@ -134,18 +140,20 @@ class FilmSerializer(serializers.ModelSerializer):
     def get_poster_file(self, obj):
         return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/poster.{obj.poster_format}'
 
+    def get_compressed_poster_file(self, obj):
+        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/compressed-poster.{obj.poster_format}'
+
     # General instance validation by 3 fields
     def validate(self, data):
         request = self.context.get('request')
-        print(request.__dict__)
-        # if request.method == 'POST':
-        existing_film = Film.objects.filter(title__iexact=data['title'],
-                                            release_date=data['release_date'],
-                                            director__iexact=data['director'])
-        if existing_film:
-            validation_error_message = 'Film with such parameters (title, director, release date) already exists'
-            logger.warning(f'Validation error - {validation_error_message}')
-            raise serializers.ValidationError(validation_error_message)
+        if request.method == 'POST':
+            existing_film = Film.objects.filter(title__iexact=data['title'],
+                                                release_date=data['release_date'],
+                                                director__iexact=data['director'])
+            if existing_film:
+                validation_error_message = 'Film with such parameters (title, director, release date) already exists'
+                logger.warning(f'Validation error - {validation_error_message}')
+                raise serializers.ValidationError(validation_error_message)
 
         return data
 
@@ -172,9 +180,47 @@ class FilmSerializer(serializers.ModelSerializer):
         logger.info(f'Successfully created "{str(film)}" instance')
         return film
 
+    def update(self, instance, validated_data):
+        # Simple fields update
+        instance.title = validated_data.get('title', instance.title)
+        instance.rating = validated_data.get('rating', instance.rating)
+        instance.content_rating = validated_data.get('content_rating', instance.content_rating)
+        instance.description = validated_data.get('description', instance.description)
+        instance.director = validated_data.get('director', instance.director)
+        instance.release_date = validated_data.get('release_date', instance.release_date)
+        instance.country = validated_data.get('country', instance.country)
+        instance.studio = validated_data.get('studio', instance.studio)
+
+        # Complicated fields update
+        actors_data = validated_data.get('actors')
+        genres_data = validated_data.get('genres')
+
+        if actors_data:
+            instance.actors.set(actors_data)
+        if genres_data:
+            instance.genres.set(genres_data)
+
+        poster_image = validated_data.get('poster_image')
+        screenshots_data = validated_data.get('screenshots')
+
+        if poster_image:
+            poster_format = poster_image.content_type.split("/")[1]
+            instance.poster_format = poster_format
+
+        imdb_id = validated_data.get('imdb_id')
+        if imdb_id:
+            validated_data['imdb_rating'] = get_cached_imdb_response(imdb_id)
+            instance.imdb_rating = validated_data.get('imdb_rating', instance.imdb_rating)
+
+        if screenshots_data or poster_image:
+            initialize_images(poster_image, screenshots_data, instance)
+
+        instance.save()
+        return instance
+
     # Changing representation of actors and genres fields from just PK's to serialized objects
     def to_representation(self, instance):
-        logger.info(f'Serializing "{str(instance)}" related actors and geres (for GET request)...')
+        logger.info(f'Serializing "{str(instance)}" related actors and genres (for GET request)...')
 
         # Local import to avoid circular import
         from actors.serializers import ActorListSerializer
