@@ -148,14 +148,20 @@ class FilmSerializer(serializers.ModelSerializer):
     # General instance validation by 3 fields
     def validate(self, data):
         request = self.context.get('request')
+        existing_film = Film.objects.filter(title__iexact=data['title'],
+                                            release_date=data['release_date'],
+                                            director__iexact=data['director'])
         if request.method == 'POST':
-            existing_film = Film.objects.filter(title__iexact=data['title'],
-                                                release_date=data['release_date'],
-                                                director__iexact=data['director'])
             if existing_film:
                 validation_error_message = 'Film with such parameters (title, director, release date) already exists'
                 logger.warning(f'Validation error - {validation_error_message}')
                 raise serializers.ValidationError(validation_error_message)
+        elif request.method == 'PUT' or request.method == 'PATCH':
+            if existing_film:
+                if existing_film.first().pk != request.parser_context['kwargs']['pk']:
+                    validation_error_message = 'Film with such parameters (title, director, release date) already exists'
+                    logger.warning(f'Validation error - {validation_error_message}')
+                    raise serializers.ValidationError(validation_error_message)
 
         return data
 
