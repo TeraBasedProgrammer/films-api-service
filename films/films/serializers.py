@@ -1,8 +1,7 @@
 import logging
 
 from rest_framework import serializers
-from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.exceptions import APIException
 from drf_extra_fields.fields import Base64ImageField
 from django.conf import settings
 from django.db import transaction, IntegrityError
@@ -175,14 +174,19 @@ class FilmSerializer(serializers.ModelSerializer):
         # Create film instance, manually set up poster_format field and many-to-many fields
         actors_data = validated_data.pop('actors')
         genres_data = validated_data.pop('genres')
-        with transaction.atomic():
-            film = Film.objects.create(**validated_data)
-            film.actors.set(actors_data)
-            film.genres.set(genres_data)
+        try:
+            with transaction.atomic():
+                film = Film.objects.create(**validated_data)
+                film.actors.set(actors_data)
+                film.genres.set(genres_data)
 
-            initialize_images(poster_image, screenshots_data, film)
-            logger.info(f'Successfully created "{str(film)}" instance')
-            return film
+                initialize_images(poster_image, screenshots_data, film)
+                if not film.screenshots.exists():
+                    raise IntegrityError
+                logger.info(f'Successfully created "{str(film)}" instance')
+                return film
+        except IntegrityError:
+            raise APIException()
 
     def update(self, instance, validated_data):
         # Simple fields update

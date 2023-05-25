@@ -2,6 +2,7 @@ import os
 import json
 import pathlib
 import logging
+import shutil
 
 import requests_cache
 from PIL import Image
@@ -62,6 +63,52 @@ def clear_directory(path: str):
     logger.debug(f'Successfully removed directory "{path}"')
 
 
+def clean_temp():
+    logger.debug(f'Cleaning directory "temp"...')
+    for file in pathlib.Path(f'{settings.MEDIA_ROOT}/temp/').iterdir():
+        try:
+            shutil.rmtree(file.absolute())
+        except FileNotFoundError:
+            pass
+
+    logger.debug(f'Successfully cleaned directory "temp"')
+
+
+def create_screenshot_files(screenshot_data, i, file_dir, compressed_file_dir):
+    """
+    Creates screenshots images in temp folder
+    @param screenshot_data: data of a single Base64 screenshot object
+    @param i: Iterator for screenshot file naming
+    @param file_dir: Screenshot file path in temp folder
+    @param compressed_file_dir: Compressed screenshot file path in temp folder
+    """
+    image_data = screenshot_data.pop('image')
+
+    image_format = image_data.content_type.split("/")[1]
+
+    # Name of the file (e.g. 'screenshot-1.png')
+    file_name = f'screenshot-{i + 1}.{image_format}'
+
+    file_path = f'{file_dir}{file_name}'
+    compressed_file_path = f'{compressed_file_dir}{file_name}'
+
+    with open(file_path, 'wb') as f:
+        f.write(image_data.file.read())
+
+    with open(compressed_file_path, 'wb') as f:
+        f.write(image_data.file.read())
+
+        # Image compressing
+        image = Image.open(file_path)
+        image_size = image.size
+        resized_width = round(image_size[0] * (176 / image_size[1]))
+        resized_image = image.resize((resized_width, 176))
+
+        resized_image.save(f, format=image_format)
+
+    return file_name
+
+
 def send_images_to_s3(directory, bucket, instance):
     """
     Sends images to given s3 bucket
@@ -87,9 +134,7 @@ def send_images_to_s3(directory, bucket, instance):
 
 def initialize_images(poster_image, screenshots_data, film):
     # Recreating temp folder to ensure it's empty
-    clear_directory(f'{settings.MEDIA_ROOT}/temp/')
-    create_directory(f'{settings.MEDIA_ROOT}/temp/')
-
+    # clean_temp(film.pk)
     logger.info(f'Preparing "{str(film)}" images to sending to S3...')
 
     # Path to temp screenshots dir
@@ -123,33 +168,27 @@ def initialize_images(poster_image, screenshots_data, film):
 
     # Screenshots files creation
     if screenshots_data:
-        for i, screenshot_data in enumerate(screenshots_data):
-            image_data = screenshot_data.pop('image')
+        if not film.screenshots.exists():
+            for i, screenshot_data in enumerate(screenshots_data):
+                file_name = create_screenshot_files(screenshot_data, i, file_dir, compressed_file_dir)
 
-            image_format = image_data.content_type.split("/")[1]
-
-            # Name of the file (e.g. 'screenshot-1.png')
-            file_name = f'screenshot-{i+1}.{image_format}'
-
-            file_path = f'{file_dir}{file_name}'
-            compressed_file_path = f'{compressed_file_dir}{file_name}'
-
-            with open(file_path, 'wb') as f:
-                f.write(image_data.file.read())
-
-            with open(compressed_file_path, 'wb') as f:
-                f.write(image_data.file.read())
-
-                # Image compressing
-                image = Image.open(file_path)
-                image_size = image.size
-                resized_width = round(image_size[0] * (176 / image_size[1]))
-                resized_image = image.resize((resized_width, 176))
-
-                resized_image.save(f, format=image_format)
-
-            Screenshot.objects.create(film=film, file=file_name)
-            logger.debug(f'Created "{file_name}" file')
+                Screenshot.objects.create(film=film, file=file_name)
+                logger.info(f'Created "{file_name}" file')
+        else:
+            if len(screenshots_data) == len(film.screenshots.all()):
+                for i, screenshot_data in enumerate(screenshots_data):
+                    create_screenshot_files(screenshot_data, i, file_dir, compressed_file_dir)
+            elif len(screenshots_data) > len(film.screenshots.all()):
+                for i, screenshot_data in enumerate(screenshots_data):
+                    file_name = create_screenshot_files(screenshot_data, i, file_dir, compressed_file_dir)
+                    if i > len(film.screenshots.all()) - 1:
+                        Screenshot.objects.create(film=film, file=file_name)
+            else:
+                film.screenshots.all().delete()
+                clean_s3_model_data(film)
+                for i, screenshot_data in enumerate(screenshots_data):
+                    file_name = create_screenshot_files(screenshot_data, i, file_dir, compressed_file_dir)
+                    Screenshot.objects.create(film=film, file=file_name)
 
     # s3 files uploading
 
