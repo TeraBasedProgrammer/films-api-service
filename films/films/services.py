@@ -23,19 +23,19 @@ def get_cached_imdb_response(imdb_id) -> str:
     @param imdb_id: imdb id for IMDB API (e.g. tt1375666)
     @return: imdb rating string (e.g. '8.80')
     """
-    try:
-        logger.info('Retrieving film\'s Imdb rating from Imdb API...')
-        session = requests_cache.CachedSession(cache_name=f'{os.path.dirname(__file__)}/cache/imdb-cache', backend='sqlite',
-                                               expire_after=600)
+    logger.info('Retrieving film\'s Imdb rating from Imdb API...')
+    session = requests_cache.CachedSession(cache_name=f'{os.path.dirname(__file__)}/cache/imdb-cache', backend='sqlite',
+                                           expire_after=600)
+    tokens = [token for token in os.environ.get('IMDB_TOKENS').split(', ')]
+    for token in tokens:
         response = json.loads((session.get(
-            'https://imdb-api.com/en/API/Ratings/k_92xc2azh/%s' % imdb_id).content.decode('utf-8')))
+            f'https://imdb-api.com/en/API/Ratings/{token}/%s' % imdb_id).content.decode('utf-8')))
         logger.info('Successfully retrieved film\'s Imdb rating')
         if 'Maximum usage' in response['errorMessage']:
-            raise ValidationError(f"Imdb api error: {response['errorMessage']}")
+            continue
         return response['imDb']
-    except ConnectionError:
-        logger.warning('Connection error (443)')
-        raise APIException('Connection error, try again')
+    raise ValidationError(f"Imdb api error. Too many requests to imdb-api")
+
 
 
 def create_directory(path: str):
