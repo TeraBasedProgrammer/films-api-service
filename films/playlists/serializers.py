@@ -4,14 +4,14 @@ from rest_framework import serializers
 
 from .models import Playlist
 from films.models import Film
-from films.serializers import FilmListSerializer
+from films.serializers import FilmListSerializer, CustomHyperlinkedIdentityField
 
 
 logger = logging.getLogger('logger')
 
 
 class PlaylistListSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(
+    url = CustomHyperlinkedIdentityField(
         view_name='playlist_retrieve',
         lookup_field='pk',
     )
@@ -48,6 +48,8 @@ class PlaylistSerializer(serializers.ModelSerializer):
         playlist.films.set(films_data)
 
         logger.info(f'Successfully created "{str(playlist)}" instance')
+
+        return playlist
 
     # Changing representation of films field from just PK's to serialized objects
     def to_representation(self, instance):

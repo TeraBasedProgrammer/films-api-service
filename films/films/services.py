@@ -48,7 +48,7 @@ def create_directory(path: str):
 
 
 def clear_directory(path: str):
-    logger.debug(f'Deleting directory "{path}"...')
+    logger.debug(f'Cleaning directory "{path}"...')
     for file in pathlib.Path(path).iterdir():
         try:
             os.remove(file.absolute())
@@ -86,6 +86,10 @@ def send_images_to_s3(directory, bucket, instance):
 
 
 def initialize_images(poster_image, screenshots_data, film):
+    # Recreating temp folder to ensure it's empty
+    clear_directory(f'{settings.MEDIA_ROOT}/temp/')
+    create_directory(f'{settings.MEDIA_ROOT}/temp/')
+
     logger.info(f'Preparing "{str(film)}" images to sending to S3...')
 
     # Path to temp screenshots dir
@@ -197,13 +201,15 @@ def clean_s3_model_data(instance: Model):
         deleted_screenshots = screenshots_bucket.objects.filter(Prefix=f'{instance.pk}/').delete()
         deleted_compressed_screenshots = compressed_screenshots_bucket.objects.filter(Prefix=f'{instance.pk}/').delete()
 
-        logger.debug(f'Deleted screenshot objects: "{deleted_screenshots[0]["Deleted"]}"')
-        logger.debug(f'Deleted compressed screenshot objects: "{deleted_compressed_screenshots[0]["Deleted"]}"')
+        if deleted_screenshots and deleted_compressed_screenshots:
+            logger.debug(f'Deleted screenshot objects: "{deleted_screenshots[0]["Deleted"]}"')
+            logger.debug(f'Deleted compressed screenshot objects: "{deleted_compressed_screenshots[0]["Deleted"]}"')
 
     elif isinstance(instance, Actor):
         actors_bucket = s3_resource.Bucket('actors-screenshots')
         deleted_actors_screenshots = actors_bucket.objects.filter(Prefix=f'{instance.pk}/').delete()
-        logger.debug(f'Deleted screenshot objects: {deleted_actors_screenshots[0]["Deleted"]}')
+        if deleted_actors_screenshots:
+            logger.debug(f'Deleted screenshot objects: {deleted_actors_screenshots[0]["Deleted"]}')
 
     logger.info(f'Successfully cleaned "{instance.__class__.__name__.lower()}s/{instance.pk}" S3 data')
     

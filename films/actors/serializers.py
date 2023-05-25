@@ -2,6 +2,7 @@ import logging
 
 from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
+from django.db import transaction
 
 from .models import Actor
 from films.models import Film
@@ -63,12 +64,13 @@ class ActorSerializer(serializers.ModelSerializer):
 
         films_data = validated_data.pop('films')
 
-        actor = Actor.objects.create(photo_format=photo_image.content_type.split("/")[1], **validated_data)
-        actor.films.set(films_data)
+        with transaction.atomic():
+            actor = Actor.objects.create(photo_format=photo_image.content_type.split("/")[1], **validated_data)
+            actor.films.set(films_data)
 
-        initialize_photo(photo_image, actor)
-        logger.info(f'Successfully created "{str(actor)}" instance')
-        return actor
+            initialize_photo(photo_image, actor)
+            logger.info(f'Successfully created "{str(actor)}" instance')
+            return actor
 
     def to_representation(self, instance):
         logger.info(f'Serializing "{str(instance)}" related films (for GET request)...')

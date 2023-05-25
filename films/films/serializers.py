@@ -1,8 +1,11 @@
 import logging
 
 from rest_framework import serializers
+from rest_framework.response import Response
+from rest_framework import status
 from drf_extra_fields.fields import Base64ImageField
 from django.conf import settings
+from django.db import transaction, IntegrityError
 
 from .models import Film, Screenshot, Genre
 from .services import get_cached_imdb_response, initialize_images
@@ -167,18 +170,19 @@ class FilmSerializer(serializers.ModelSerializer):
         # Retrieving screenshots and poster data
         screenshots_data = validated_data.pop('screenshots')
         poster_image = validated_data.pop('poster_image')
+        validated_data['poster_format'] = poster_image.content_type.split("/")[1]
 
         # Create film instance, manually set up poster_format field and many-to-many fields
         actors_data = validated_data.pop('actors')
         genres_data = validated_data.pop('genres')
+        with transaction.atomic():
+            film = Film.objects.create(**validated_data)
+            film.actors.set(actors_data)
+            film.genres.set(genres_data)
 
-        film = Film.objects.create(poster_format=poster_image.content_type.split("/")[1], **validated_data)
-        film.actors.set(actors_data)
-        film.genres.set(genres_data)
-
-        initialize_images(poster_image, screenshots_data, film)
-        logger.info(f'Successfully created "{str(film)}" instance')
-        return film
+            initialize_images(poster_image, screenshots_data, film)
+            logger.info(f'Successfully created "{str(film)}" instance')
+            return film
 
     def update(self, instance, validated_data):
         # Simple fields update
@@ -212,11 +216,12 @@ class FilmSerializer(serializers.ModelSerializer):
             validated_data['imdb_rating'] = get_cached_imdb_response(imdb_id)
             instance.imdb_rating = validated_data.get('imdb_rating', instance.imdb_rating)
 
-        if screenshots_data or poster_image:
-            initialize_images(poster_image, screenshots_data, instance)
+        with transaction.atomic():
+            if screenshots_data or poster_image:
+                initialize_images(poster_image, screenshots_data, instance)
 
-        instance.save()
-        return instance
+            instance.save()
+            return instance
 
     # Changing representation of actors and genres fields from just PK's to serialized objects
     def to_representation(self, instance):
