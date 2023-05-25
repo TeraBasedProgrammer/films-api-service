@@ -74,6 +74,7 @@ def validate_text(value):
 def validate_image(value):
     # Image size validation
 
+    print(value)
     size_mb = value.file.getbuffer().nbytes / (1024 * 1024)
     if size_mb > 10:
         validation_error_message = "File size must be under 10 MB"

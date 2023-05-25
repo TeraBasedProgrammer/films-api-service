@@ -72,6 +72,27 @@ class ActorSerializer(serializers.ModelSerializer):
             logger.info(f'Successfully created "{str(actor)}" instance')
             return actor
 
+    def update(self, instance, validated_data):
+        # Simple fields update
+        instance.name = validated_data.get('name', instance.name)
+        instance.birth_date = validated_data.get('birth_date', instance.birth_date)
+        instance.death_date = validated_data.get('death_date', instance.death_date)
+        instance.description = validated_data.get('name', instance.name)
+
+        # Complicated fields update
+        photo_image = validated_data.get('photo_image')
+        films_data = validated_data.get('films')
+
+        if films_data:
+            instance.films.set(films_data)
+
+        with transaction.atomic():
+            if photo_image:
+                initialize_photo(photo_image, instance)
+
+            instance.save()
+            return instance
+
     def to_representation(self, instance):
         logger.info(f'Serializing "{str(instance)}" related films (for GET request)...')
 
