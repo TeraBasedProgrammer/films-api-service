@@ -1,4 +1,6 @@
-from django.db import models
+from django.db import models, IntegrityError
+from rest_framework.response import Response
+from rest_framework import status
 
 from actors.models import Actor
 from .validators import validate_text, validate_rating, validate_age_restriction, validate_names
@@ -27,6 +29,15 @@ class Film(models.Model):
     # TODO: add validation (later)
     content_rating = models.CharField(max_length=25)
     studio = models.CharField(max_length=100, validators=[validate_text])
+
+    class Meta:
+        unique_together = ['title', 'release_date', 'director']
+
+    def save(self, *args, **kwargs):
+        try:
+            super().save(*args, **kwargs)
+        except IntegrityError:
+            pass
 
     def __str__(self):
         return self.title

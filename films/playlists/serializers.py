@@ -37,6 +37,7 @@ class PlaylistSerializer(serializers.ModelSerializer):
             'pk',
             'title',
             'films',
+            'user_id',
         ]
 
     def create(self, validated_data):

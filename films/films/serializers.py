@@ -167,7 +167,6 @@ class FilmSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         logger.info('Creating new Film instance...')
-
         # Retrieving and initializing film imDb rating
         imdb_id = validated_data.pop('imdb_id')
         validated_data['imdb_rating'] = get_cached_imdb_response(imdb_id)
