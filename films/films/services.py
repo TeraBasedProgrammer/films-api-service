@@ -33,6 +33,8 @@ def get_cached_imdb_response(imdb_id) -> str:
         logger.info('Successfully retrieved film\'s Imdb rating')
         if 'Maximum usage' in response['errorMessage']:
             continue
+        if not response['imDb']:
+            raise ValidationError('This film haven\'t got imdb rating yet, try to add it later')
         return response['imDb']
     raise ValidationError(f"Imdb api error. Too many requests to imdb-api")
 

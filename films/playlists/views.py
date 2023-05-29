@@ -1,5 +1,6 @@
 from django.db.models import Q
 from rest_framework import generics
+from rest_framework.serializers import ValidationError
 
 from .models import Playlist
 from .serializers import PlaylistSerializer, PlaylistListSerializer
@@ -14,6 +15,20 @@ class PlaylistListCreateView(generics.ListCreateAPIView):
             return PlaylistListSerializer
         elif self.request.method == 'POST':
             return PlaylistSerializer
+    
+    # def g``
+    # if self.request.method == 'GET':
+    #     user_id_q = self.request.GET.get("user_id")
+    #     if not user_id_q:
+    #         return ValidationError('You must provide "user_id" query parameter to get playlists of the specific user')
+    #     else:
+    #         try:
+    #             user_id = int(user_id_q)
+    #             return Playlist.objects.filter(user_id=user_id)
+    #         except ValueError:
+    #             return ValidationError('"user_id" query parameter must be Integer')
+    def get_queryset(self):
+        return super().get_queryset()
 
 
 playlist_list_create = PlaylistListCreateView.as_view()

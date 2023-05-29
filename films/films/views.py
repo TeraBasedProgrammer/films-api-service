@@ -2,8 +2,6 @@ import itertools
 
 from django.db.models import Q
 from rest_framework import generics
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
