@@ -77,7 +77,7 @@ class ActorSerializer(serializers.ModelSerializer):
         instance.name = validated_data.get('name', instance.name)
         instance.birth_date = validated_data.get('birth_date', instance.birth_date)
         instance.death_date = validated_data.get('death_date', instance.death_date)
-        instance.description = validated_data.get('name', instance.name)
+        instance.description = validated_data.get('description', instance.description)
 
         # Complicated fields update
         photo_image = validated_data.get('photo_image')
