@@ -56,6 +56,16 @@ class ActorSerializer(serializers.ModelSerializer):
 
     def get_photo_file(self, obj):
         return f'https://actors-screenshots.s3.eu-north-1.amazonaws.com/{obj.pk}/photo.{obj.photo_format}'
+    
+    def validate(self, data):
+        birth_date = data.get('birth_date')
+        death_date = data.get('death_date')
+
+        if birth_date and death_date and death_date < birth_date:
+            raise serializers.ValidationError("Death date cannot be earlier than birth date.")
+
+        return data
+
 
     def create(self, validated_data):
         logger.info('Creating new Actor instance...')

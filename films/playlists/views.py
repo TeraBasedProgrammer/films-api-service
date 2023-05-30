@@ -1,34 +1,37 @@
 from django.db.models import Q
 from rest_framework import generics
-from rest_framework.serializers import ValidationError
+from rest_framework.exceptions import ParseError
 
 from .models import Playlist
+from .filters import filter_playlists
 from .serializers import PlaylistSerializer, PlaylistListSerializer
 
 
 # Playlists views
 class PlaylistListCreateView(generics.ListCreateAPIView):
-    queryset = Playlist.objects.all()
-
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return PlaylistListSerializer
         elif self.request.method == 'POST':
             return PlaylistSerializer
-    
-    # def g``
-    # if self.request.method == 'GET':
-    #     user_id_q = self.request.GET.get("user_id")
-    #     if not user_id_q:
-    #         return ValidationError('You must provide "user_id" query parameter to get playlists of the specific user')
-    #     else:
-    #         try:
-    #             user_id = int(user_id_q)
-    #             return Playlist.objects.filter(user_id=user_id)
-    #         except ValueError:
-    #             return ValidationError('"user_id" query parameter must be Integer')
+
+    def list(self, request, *args, **kwargs):
+        if 'user_id' not in request.query_params:
+            raise ParseError(detail="user_id query parameter is required.", code=400)
+        try:
+            int(request.query_params['user_id'])
+        except ValueError:
+            raise ParseError(detail="user_id must be an integer.", code=400)
+
+        return super().list(request, *args, **kwargs)
+
     def get_queryset(self):
-        return super().get_queryset()
+        if self.request.method == 'GET':
+            queryset = Playlist.objects.all()
+            filtered_queryset = filter_playlists(queryset, self.request.GET)
+            return filtered_queryset
+        else:
+            return Playlist.objects.all()
 
 
 playlist_list_create = PlaylistListCreateView.as_view()

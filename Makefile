@@ -23,7 +23,7 @@ dbuild-films:
 	cd ./films && docker build -f Dockerfile -t ilyadronov/cinotes-films:1.0.0 .
 	docker push ilyadronov/cinotes-films:1.0.0
 
-start:
+run:
 	docker compose up -d
 
 stop:
