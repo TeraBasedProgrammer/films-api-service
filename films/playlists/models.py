@@ -6,7 +6,10 @@ class Playlist(models.Model):
 
     # Id of the owner of the playlist
     user_id = models.IntegerField()
-    films = models.ManyToManyField('films.Film')
+    is_default = models.BooleanField(default=False)
+
+    films = models.ManyToManyField('films.Film', blank=True)
+    user_type = models.CharField(max_length=7, default='basic')
 
     class Meta:
         unique_together = ['title', 'user_id']

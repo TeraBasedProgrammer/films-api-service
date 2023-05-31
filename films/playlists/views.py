@@ -1,6 +1,7 @@
 from django.db.models import Q
 from rest_framework import generics
 from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import PermissionDenied
 
 from .models import Playlist
 from .filters import filter_playlists
@@ -56,6 +57,16 @@ playlist_update = PlaylistUpdateAPIView.as_view()
 class PlaylistDeleteAPIView(generics.DestroyAPIView):
     queryset = Playlist.objects.all()
     serializer_class = PlaylistSerializer
+
+    # Overriden 'delete' method for prevention of deleting default playlists
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        print(instance.is_default)
+
+        if instance.is_default:
+            raise PermissionDenied(detail="Cannot delete default playlist.", code=403)
+
+        return super().destroy(request, *args, **kwargs)
 
 
 playlist_delete = PlaylistDeleteAPIView.as_view()

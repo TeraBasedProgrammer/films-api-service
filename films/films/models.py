@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from actors.models import Actor
+from playlists.models import Playlist
 from .validators import validate_text, validate_rating, validate_age_restriction, validate_names
 
 
