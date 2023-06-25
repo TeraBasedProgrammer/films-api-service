@@ -23,13 +23,16 @@ class CustomHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
     def to_representation(self, value):
         request = self.context.get('request', None)
         if request is not None:
+            scheme = 'http'
             if settings.DEBUG:
                 host = request.get_host()
                 if ':' not in host:
                     host += ':' + request.META['SERVER_PORT']
             else:
                 host = settings.REMOTE_HOST
+                scheme = 'https'
             self.context['request']._request.META['HTTP_HOST'] = host
+            self.context['request']._request.META['wsgi.url_scheme'] = scheme
         return super(CustomHyperlinkedIdentityField, self).to_representation(value)
 
 

@@ -2,25 +2,8 @@ version: '3.8'
 
 
 services:
-  # authorization:
-  #   build:
-  #     context: ./authorization-service
-  #     dockerfile: authorization-service.dockerfile
-  #   env_file:
-  #     - "./authorization-service/.env"
-  #   volumes:
-  #     - ./authorization-service:/app
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   ports:
-  #     -command: sudo su postgres "8080:80"
-  #   networks:
-  #     - local
-
   films:
     build: ./films
-#    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./films/:/films/
     ports:
@@ -30,27 +13,27 @@ services:
     networks:
       - local
 
-#  postgres:
-#    container_name: "pg-db"
-#    image: postgres
-#    user: postgres
-#    ports:
-#      - "5432:5432"
-#    healthcheck:
-#      test: ["CMD-SHELL", "pg_isready", "-d", "db_prod"]
-#      interval: 5s
-#      timeout: 60s
-#      retries: 5
-#    environment:
-#      POSTGRES_DB: cinema
-#      POSTGRES_PASSWORD: "123456"
-#    networks:
-#      - local
-#    volumes:
-#      - postgres_data:/var/lib/postgresql/data/
+  postgres:
+    container_name: "pg-db"
+    image: postgres
+    user: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "db_prod"]
+      interval: 5s
+      timeout: 60s
+      retries: 5
+    environment:
+      POSTGRES_DB: cinema
+      POSTGRES_PASSWORD: "123456"
+    networks:
+      - local
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
 
 networks:
   local:
 
-#volumes:
-#  postgres_data:
+volumes:
+ postgres_data:
