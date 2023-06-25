@@ -1,10 +1,7 @@
 from django.db import models, IntegrityError
-from rest_framework.response import Response
-from rest_framework import status
 
 from actors.models import Actor
-from playlists.models import Playlist
-from .validators import validate_text, validate_rating, validate_age_restriction, validate_names
+from .validators import validate_text, validate_rating, validate_names
 
 
 class Film(models.Model):
@@ -23,11 +20,8 @@ class Film(models.Model):
     release_date = models.DateField()
     director = models.CharField(max_length=50, validators=[validate_names])
     description = models.TextField(validators=[validate_text])
-    # Old age rating field
-    # age_restriction = models.IntegerField(validators=[validate_age_restriction])
 
     # New age rating field
-    # TODO: add validation (later)
     content_rating = models.CharField(max_length=25)
     studio = models.CharField(max_length=100, validators=[validate_text])
 

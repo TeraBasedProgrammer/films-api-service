@@ -113,7 +113,7 @@ def create_screenshot_files(screenshot_data, i, file_dir, compressed_file_dir):
 
 def send_images_to_s3(directory, bucket, instance):
     """
-    Sends images to given s3 bucket
+    Sends images to given s3 bucket (if in prod mode)
     @param directory: path to directory with images
     @param bucket: s3 bucket name
     @param instance: model instance for getting 'pk' field
@@ -135,8 +135,6 @@ def send_images_to_s3(directory, bucket, instance):
 
 
 def initialize_images(poster_image, screenshots_data, film):
-    # Recreating temp folder to ensure it's empty
-    # clean_temp(film.pk)
     logger.info(f'Preparing "{str(film)}" images to sending to S3...')
 
     # Path to temp screenshots dir

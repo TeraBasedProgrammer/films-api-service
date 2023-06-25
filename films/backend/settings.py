@@ -129,6 +129,7 @@ else:
 
 DJANGO_LOG_LEVEL = 'DEBUG' if DEBUG else 'INFO'
 
+# Logging configuration
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

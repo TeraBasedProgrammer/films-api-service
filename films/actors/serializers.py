@@ -69,6 +69,7 @@ class ActorSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         logger.info('Creating new Actor instance...')
+        
         # Retrieving photo image
         photo_image = validated_data.pop('photo_image')
 
