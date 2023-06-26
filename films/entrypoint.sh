@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 if [ "$DATABASE" = "postgres" ]
 then
