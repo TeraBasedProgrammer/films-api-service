@@ -45,8 +45,10 @@ This RESTful API service is a part of the training project Cinotes (currently un
   ```bash
   $ make run
   ```
-
+  or
   * Docker compose
   ```bash
   $ docker compose up -d
   ```
+## Usage
+
