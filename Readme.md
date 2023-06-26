@@ -38,7 +38,7 @@ This RESTful API service is a part of the training project Cinotes (currently un
      ```
   4. Install dependencies
       ```bash
-      $ pip install -r requirements.txt
+      $ pip install -r films/requirements.txt
       ```
 * Run the application
   * Makefile
