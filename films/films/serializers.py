@@ -151,25 +151,6 @@ class FilmSerializer(serializers.ModelSerializer):
     def get_compressed_poster_file(self, obj):
         return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/compressed-poster.{obj.poster_format}'
 
-    # General instance validation by 3 fields
-    # def validate(self, data):
-    #     request = self.context.get('request')
-    #     existing_film = Film.objects.filter(title__iexact=data.get('title'),
-    #                                         release_date=data.get('release_date')),
-    #     print(existing_film)
-    #     if request.method == 'POST':
-    #         if existing_film[0]:
-    #             validation_error_message = 'Film with such parameters (title, release date) already exists'
-    #             logger.warning(f'Validation error - {validation_error_message}')
-    #             raise serializers.ValidationError(validation_error_message)
-    #     elif request.method == 'PUT' or request.method == 'PATCH':
-    #         if existing_film:
-    #             if existing_film.first().pk != request.parser_context['kwargs']['pk']:
-    #                 validation_error_message = 'Film with such parameters (title, release date) already exists'
-    #                 logger.warning(f'Validation error - {validation_error_message}')
-    #                 raise serializers.ValidationError(validation_error_message)
-
-    #     return data
 
     def create(self, validated_data):
         logger.info('Creating new Film instance...')
