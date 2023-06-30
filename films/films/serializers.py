@@ -63,10 +63,11 @@ class ScreenshotSerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    slug = serializers.SlugField(read_only=True)
     class Meta:
         model = Genre
         fields = [
-            'pk',
+            'slug',
             'title',
         ]
 
@@ -81,7 +82,7 @@ class FilmListSerializer(serializers.ModelSerializer):
     # Additional fields
     url = CustomHyperlinkedIdentityField(
         view_name='film_retrieve',
-        lookup_field='pk'
+        lookup_field='slug'
     )
 
     poster_file = serializers.SerializerMethodField(read_only=True)
@@ -115,7 +116,8 @@ class FilmSerializer(serializers.ModelSerializer):
     poster_image = Base64ImageField(write_only=True, validators=[validate_image])
 
     # Field for listing related actors (drf doesn't see this field from model, so it has to be in serializer)
-    actors = serializers.PrimaryKeyRelatedField(queryset=Actor.objects.all(), many=True)
+    actors = serializers.SlugRelatedField(queryset=Actor.objects.all(), many=True, slug_field='slug')
+    genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='slug')
     slug = serializers.SlugField(read_only=True)
     
 
@@ -123,7 +125,6 @@ class FilmSerializer(serializers.ModelSerializer):
         model = Film
         fields = [
             # Model fields
-            'pk',
             'slug',
             'title',
             'poster_file',
@@ -132,8 +133,8 @@ class FilmSerializer(serializers.ModelSerializer):
             'rating',
             'country',
             'release_date',
-            'actors',
             'genres',
+            'actors',
             'director',
             'description',
             'content_rating',
@@ -164,8 +165,8 @@ class FilmSerializer(serializers.ModelSerializer):
         validated_data['poster_format'] = poster_image.content_type.split("/")[1]
 
         # Create film instance, manually set up poster_format field and many-to-many fields
-        actors_data = validated_data.pop('actors')
         genres_data = validated_data.pop('genres')
+        actors_data = validated_data.pop('actors')
         try:
             with transaction.atomic():
                 film = Film.objects.create(**validated_data)

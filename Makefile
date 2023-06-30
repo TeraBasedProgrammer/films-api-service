@@ -34,3 +34,6 @@ migrate:
 
 films-docker-shell:
 	docker compose exec films sh
+
+pshell:
+	docker compose exec films python manage.py shell -i ipython

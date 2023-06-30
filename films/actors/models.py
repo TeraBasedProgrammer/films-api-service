@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 
 from films.validators import validate_text, validate_names
 
@@ -15,6 +16,11 @@ class Actor(models.Model):
 
     # Format of the actor image (it has the same name, format can only change)
     photo_format = models.CharField(max_length=4)
+    slug = models.SlugField(unique=True)
+
+    def save(self, *args, **kwargs):
+        self.slug =  slugify(f'{self.name}')
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

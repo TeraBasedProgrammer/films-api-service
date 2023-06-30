@@ -23,6 +23,7 @@ actor_list_create = ActorListCreateView.as_view()
 class ActorDetailAPIView(generics.RetrieveAPIView):
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
+    lookup_field = 'slug'
 
 
 actor_retrieve = ActorDetailAPIView.as_view()
@@ -31,6 +32,7 @@ actor_retrieve = ActorDetailAPIView.as_view()
 class ActorUpdateAPIView(generics.UpdateAPIView):
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
+    lookup_field = 'slug'
 
 
 actor_update = ActorUpdateAPIView.as_view()
@@ -39,6 +41,7 @@ actor_update = ActorUpdateAPIView.as_view()
 class ActorDeleteAPIView(generics.DestroyAPIView):
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
+    lookup_field = 'slug'
 
     def delete(self, request, *args, **kwargs):
         clean_s3_model_data(self.get_object())

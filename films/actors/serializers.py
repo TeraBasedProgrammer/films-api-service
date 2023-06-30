@@ -17,14 +17,13 @@ logger = logging.getLogger('logger')
 class ActorListSerializer(serializers.ModelSerializer):
     url = CustomHyperlinkedIdentityField(
         view_name='actor_retrieve',
-        lookup_field='pk'
+        lookup_field='slug'
     )
     photo_file = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Actor
         fields = [
-            'pk',
             'name',
             'photo_file',
             'url',
@@ -40,11 +39,12 @@ class ActorSerializer(serializers.ModelSerializer):
 
     # Field for listing related films (drf doesn't see this field from model, so it has to be in serializer)
     films = serializers.PrimaryKeyRelatedField(queryset=Film.objects.all(), many=True)
+    slug = serializers.SlugField(read_only=True)
 
     class Meta:
         model = Actor
         fields = [
-            'pk',
+            'slug',
             'name',
             'birth_date',
             'death_date',
