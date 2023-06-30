@@ -30,7 +30,9 @@ class CustomHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
                     host += ':' + request.META['SERVER_PORT']
             else:
                 host = settings.REMOTE_HOST
-                scheme = 'https'
+                if ':' not in host:
+                    host += ':' + request.META['SERVER_PORT']
+                scheme = 'http'
             self.context['request']._request.META['HTTP_HOST'] = host
             self.context['request']._request.META['wsgi.url_scheme'] = scheme
         return super(CustomHyperlinkedIdentityField, self).to_representation(value)
@@ -56,10 +58,10 @@ class ScreenshotSerializer(serializers.ModelSerializer):
         ]
 
     def get_file(self, obj):
-        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.film.pk}/{obj.file}'
+        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.film.slug}/{obj.file}'
 
     def get_compressed_file(self, obj):
-        return f'https://films-compressed-screenshots.s3.eu-central-1.amazonaws.com/{obj.film.pk}/{obj.file}'
+        return f'https://films-compressed-screenshots.s3.eu-central-1.amazonaws.com/{obj.film.slug}/{obj.file}'
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -101,10 +103,10 @@ class FilmListSerializer(serializers.ModelSerializer):
         ]
 
     def get_poster_file(self, obj):
-        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/poster.{obj.poster_format}'
+        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.slug}/poster.{obj.poster_format}'
 
     def get_compressed_poster_file(self, obj):
-        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/compressed-poster.{obj.poster_format}'
+        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.slug}/compressed-poster.{obj.poster_format}'
 
 
 class FilmSerializer(serializers.ModelSerializer):
@@ -147,10 +149,10 @@ class FilmSerializer(serializers.ModelSerializer):
         ]
     
     def get_poster_file(self, obj):
-        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/poster.{obj.poster_format}'
+        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.slug}/poster.{obj.poster_format}'
 
     def get_compressed_poster_file(self, obj):
-        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.pk}/compressed-poster.{obj.poster_format}'
+        return f'https://films-screenshots.s3.eu-central-1.amazonaws.com/{obj.slug}/compressed-poster.{obj.poster_format}'
 
 
     def create(self, validated_data):

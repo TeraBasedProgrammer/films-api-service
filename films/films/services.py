@@ -116,7 +116,7 @@ def send_images_to_s3(directory, bucket, instance):
     Sends images to given s3 bucket (if in prod mode)
     @param directory: path to directory with images
     @param bucket: s3 bucket name
-    @param instance: model instance for getting 'pk' field
+    @param instance: model instance for getting 'slug' field
     """
 
     # Credentials and session
@@ -128,7 +128,7 @@ def send_images_to_s3(directory, bucket, instance):
         return
 
     for file in pathlib.Path(directory).iterdir():
-        s3.upload_file(file.absolute(), bucket, f'{instance.pk}/{file.name}')
+        s3.upload_file(file.absolute(), bucket, f'{instance.slug}/{file.name}')
         logger.debug(f'"{file.name}" file was successfully sent to S3')
 
     logger.info(f'All "{str(instance)}" files were successfully sent to S3')
@@ -138,15 +138,15 @@ def initialize_images(poster_image, screenshots_data, film):
     logger.info(f'Preparing "{str(film)}" images to sending to S3...')
 
     # Path to temp screenshots dir
-    file_dir = f'{settings.MEDIA_ROOT}/temp/{film.pk}/'
+    file_dir = f'{settings.MEDIA_ROOT}/temp/{film.slug}/'
 
     # Path to temp compressed screenshots dir
     compressed_file_dir = f'{file_dir[:-1]}-compressed/'
 
-    # Creating film (pk) screenshots folder
+    # Creating film (slug) screenshots folder
     create_directory(file_dir)
 
-    # Creating film (pk) compressed screenshots folder
+    # Creating film (slug) compressed screenshots folder
     create_directory(compressed_file_dir)
 
     if poster_image:
@@ -237,8 +237,8 @@ def clean_s3_model_data(instance: Model):
         compressed_screenshots_bucket = s3_resource.Bucket('films-compressed-screenshots')
 
         # Deleting specific screenshots folder (e.g. '241/')
-        deleted_screenshots = screenshots_bucket.objects.filter(Prefix=f'{instance.pk}/').delete()
-        deleted_compressed_screenshots = compressed_screenshots_bucket.objects.filter(Prefix=f'{instance.pk}/').delete()
+        deleted_screenshots = screenshots_bucket.objects.filter(Prefix=f'{instance.slug}/').delete()
+        deleted_compressed_screenshots = compressed_screenshots_bucket.objects.filter(Prefix=f'{instance.slug}/').delete()
 
         if deleted_screenshots and deleted_compressed_screenshots:
             logger.debug(f'Deleted screenshot objects: "{deleted_screenshots[0]["Deleted"]}"')
@@ -246,9 +246,9 @@ def clean_s3_model_data(instance: Model):
 
     elif isinstance(instance, Actor):
         actors_bucket = s3_resource.Bucket('actors-screenshots')
-        deleted_actors_screenshots = actors_bucket.objects.filter(Prefix=f'{instance.pk}/').delete()
+        deleted_actors_screenshots = actors_bucket.objects.filter(Prefix=f'{instance.slug}/').delete()
         if deleted_actors_screenshots:
             logger.debug(f'Deleted screenshot objects: {deleted_actors_screenshots[0]["Deleted"]}')
 
-    logger.info(f'Successfully cleaned "{instance.__class__.__name__.lower()}s/{instance.pk}" S3 data')
+    logger.info(f'Successfully cleaned "{instance.__class__.__name__.lower()}s/{instance.slug}" S3 data')
     

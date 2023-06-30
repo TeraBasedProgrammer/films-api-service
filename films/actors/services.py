@@ -11,7 +11,7 @@ logger = logging.getLogger('logger')
 def initialize_photo(photo_image, actor):
     if photo_image:
         logger.info(f'Preparing "{str(actor)}" photo to sending to S3...')
-        file_dir = f'{settings.MEDIA_ROOT}/temp/{actor.pk}/'
+        file_dir = f'{settings.MEDIA_ROOT}/temp/{actor.slug}/'
         create_directory(file_dir)
 
         photo_file = f'{file_dir}photo.{actor.photo_format}'

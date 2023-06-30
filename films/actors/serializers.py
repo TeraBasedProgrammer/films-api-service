@@ -30,7 +30,7 @@ class ActorListSerializer(serializers.ModelSerializer):
         ]
 
     def get_photo_file(self, obj):
-        return f'https://actors-screenshots.s3.eu-north-1.amazonaws.com/{obj.pk}/photo.{obj.photo_format}'
+        return f'https://actors-screenshots.s3.eu-north-1.amazonaws.com/{obj.slug}/photo.{obj.photo_format}'
 
 
 class ActorSerializer(serializers.ModelSerializer):
@@ -55,7 +55,7 @@ class ActorSerializer(serializers.ModelSerializer):
         ]
 
     def get_photo_file(self, obj):
-        return f'https://actors-screenshots.s3.eu-north-1.amazonaws.com/{obj.pk}/photo.{obj.photo_format}'
+        return f'https://actors-screenshots.s3.eu-north-1.amazonaws.com/{obj.slug}/photo.{obj.photo_format}'
     
     def validate(self, data):
         birth_date = data.get('birth_date')
