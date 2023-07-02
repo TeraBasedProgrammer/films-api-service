@@ -7,8 +7,8 @@ from django.conf import settings
 from django.db import transaction, IntegrityError
 
 from .models import Film, Screenshot, Genre
-from .services import get_cached_imdb_response, initialize_images
-from .validators import validate_imdb_id, validate_image
+from .services import initialize_images
+from .validators import validate_image
 from actors.models import Actor
 
 
@@ -111,7 +111,6 @@ class FilmListSerializer(serializers.ModelSerializer):
 
 class FilmSerializer(serializers.ModelSerializer):
     # Additional fields
-    imdb_id = serializers.CharField(write_only=True, validators=[validate_imdb_id])
     screenshots = ScreenshotSerializer(many=True)
     poster_file = serializers.SerializerMethodField(read_only=True)
     compressed_poster_file = serializers.SerializerMethodField(read_only=True)
@@ -140,11 +139,9 @@ class FilmSerializer(serializers.ModelSerializer):
             'director',
             'description',
             'content_rating',
-            'imdb_rating',
             'studio',
 
             # Additional fields
-            'imdb_id',
             'screenshots',
         ]
     
@@ -157,9 +154,6 @@ class FilmSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         logger.info('Creating new Film instance...')
-        # Retrieving and initializing film imDb rating
-        imdb_id = validated_data.pop('imdb_id')
-        validated_data['imdb_rating'] = get_cached_imdb_response(imdb_id)
 
         # Retrieving screenshots and poster data
         screenshots_data = validated_data.pop('screenshots')
@@ -209,11 +203,6 @@ class FilmSerializer(serializers.ModelSerializer):
         if poster_image:
             poster_format = poster_image.content_type.split("/")[1]
             instance.poster_format = poster_format
-
-        imdb_id = validated_data.get('imdb_id')
-        if imdb_id:
-            validated_data['imdb_rating'] = get_cached_imdb_response(imdb_id)
-            instance.imdb_rating = validated_data.get('imdb_rating', instance.imdb_rating)
 
         with transaction.atomic():
             if screenshots_data or poster_image:

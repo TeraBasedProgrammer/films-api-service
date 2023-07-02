@@ -17,29 +17,6 @@ from actors.models import Actor
 logger = logging.getLogger('logger')
 
 
-def get_cached_imdb_response(imdb_id) -> str:
-    """
-    Retrieves film imdb rating (directly or from cache)
-    @param imdb_id: imdb id for IMDB API (e.g. tt1375666)
-    @return: imdb rating string (e.g. '8.80')
-    """
-    logger.info('Retrieving film\'s Imdb rating from Imdb API...')
-    session = requests_cache.CachedSession(cache_name=f'{os.path.dirname(__file__)}/cache/imdb-cache', backend='sqlite',
-                                           expire_after=600)
-    tokens = [token for token in os.environ.get('IMDB_TOKENS').split(', ')]
-    for token in tokens:
-        response = json.loads((session.get(
-            f'https://imdb-api.com/en/API/Ratings/{token}/%s' % imdb_id).content.decode('utf-8')))
-        logger.info('Successfully retrieved film\'s Imdb rating')
-        if 'Maximum usage' in response['errorMessage']:
-            continue
-        if not response['imDb']:
-            raise ValidationError('This film haven\'t got imdb rating yet, try to add it later')
-        return response['imDb']
-    raise ValidationError(f"Imdb api error. Too many requests to imdb-api")
-
-
-
 def create_directory(path: str):
     logger.debug(f'Creating directory "{path}"...')
     try:

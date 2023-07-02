@@ -14,7 +14,6 @@ def filter_films(queryset: QuerySet[Film], request) -> QuerySet[Film]:
 
     # Check if order_by query parameter is allowed (else set it to 'pk')
     if order_by not in ['release_date', '-release_date',
-                        'imdb_rating', '-imdb_rating',
                         'rating', '-rating']:
         order_by = '-release_date'
     else:

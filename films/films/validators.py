@@ -10,25 +10,6 @@ from django.core.validators import RegexValidator
 logger = logging.getLogger('logger')
 
 
-def validate_imdb_id(value):
-    if value[:2] != 'tt':
-        validation_error_message = 'Imdb film id must start with "tt"'
-        logger.warning(f'Validation error - "{validation_error_message}"')
-        raise ValidationError(validation_error_message)
-    
-    session = requests_cache.CachedSession(cache_name=f'{os.path.dirname(__file__)}/cache/imdb-cache', backend='sqlite', expire_after=600)
-    try:
-        response = json.loads((session.get('https://imdb-api.com/en/API/Ratings/k_92xc2azh/%s' % value).content.decode('utf-8')))
-        if response['errorMessage']:
-            validation_error_message = 'Invalid ImDb film id'
-            logger.warning(f'Validation error - "{validation_error_message}"')
-            raise ValidationError(validation_error_message)
-    except ConnectionError as e:
-        logger.warning(f'Validation error - "{e.message}"')
-        raise ValidationError(e.message)
-    return value
-    
-
 def validate_rating(value):
     if not 0.00 <= value <= 10.00:
         validation_error_message = 'Rating must be from 0.00 to 10.00'
