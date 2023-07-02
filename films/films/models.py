@@ -1,5 +1,7 @@
-from django.db import models, IntegrityError
+from django.db import models
+from django.db import IntegrityError
 from django.utils.text import slugify
+from rest_framework.serializers import ValidationError
 
 from actors.models import Actor
 from .validators import validate_text, validate_rating, validate_names
@@ -36,10 +38,10 @@ class Film(models.Model):
             self.slug =  slugify(f'{self.title} {self.release_date.year}')
             super().save(*args, **kwargs)
         except IntegrityError:
-            pass
+            raise ValidationError({"non_field_errors":["The fields title, release_date must make a unique set."]})
 
-    def __str__(self):
-        return self.title
+    # def __str__(self):
+    #     return self.title
 
 
 class FilmActor(models.Model):
@@ -57,8 +59,11 @@ class Genre(models.Model):
     slug = models.SlugField(unique=True)
 
     def save(self, *args, **kwargs):
-        self.slug = slugify(f'{self.title}')
-        super().save(*args, **kwargs)
+        try:
+            self.slug =  slugify(f'{self.title}')
+            super().save(*args, **kwargs)
+        except IntegrityError:
+            raise ValidationError({'title':['genre with this title already exists.']})
 
     def __str__(self):
         return self.title

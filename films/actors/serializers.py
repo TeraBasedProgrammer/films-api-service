@@ -3,6 +3,7 @@ import logging
 from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 from django.db import transaction
+from django.utils.text import slugify
 
 from .models import Actor
 from films.models import Film
@@ -77,6 +78,7 @@ class ActorSerializer(serializers.ModelSerializer):
 
         with transaction.atomic():
             actor = Actor.objects.create(photo_format=photo_image.content_type.split("/")[1], **validated_data)
+            actor.slug = slugify(actor.name)
             actor.films.set(films_data)
 
             initialize_photo(photo_image, actor)

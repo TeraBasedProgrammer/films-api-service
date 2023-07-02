@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
+from django.db import IntegrityError
+from rest_framework.serializers import ValidationError
 
 from films.validators import validate_text, validate_names
 
@@ -19,8 +21,11 @@ class Actor(models.Model):
     slug = models.SlugField(unique=True)
 
     def save(self, *args, **kwargs):
-        self.slug =  slugify(f'{self.name}')
-        super().save(*args, **kwargs)
-
+        try:
+            self.slug = slugify(self.name)
+            super().save(*args, **kwargs)
+        except IntegrityError:
+            raise ValidationError({'name':['actor with this name already exists.']})
+        
     def __str__(self):
         return self.name
