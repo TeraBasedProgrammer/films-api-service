@@ -17,6 +17,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='playlist',
-            unique_together={('title', 'user_id')},
+            unique_together={('title', 'user')},
         ),
     ]

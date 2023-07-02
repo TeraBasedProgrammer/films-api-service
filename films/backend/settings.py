@@ -1,13 +1,14 @@
 from datetime import timedelta
 from pathlib import Path
 import os
+import secrets
 
 import boto3
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY", secrets.token_hex(32))
 
 DEBUG = os.environ.get("DEBUG", "False").lower() == 'true'
 
@@ -122,8 +123,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'films.paginators.CustomPageSizePagination',
     'PAGE_SIZE': 10,
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
@@ -135,7 +136,7 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'SIGNING_KEY': SECRET_KEY,
+    # 'SIGNING_KEY': secrets.token_hex(32),
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_TOKEN_CLASSES': ("rest_framework_simplejwt.tokens.AccessToken",),
