@@ -10,15 +10,15 @@ urlpatterns = [
 
     # genres
     path('genres/', genre_list_create),
+    path('genres/search/', genre_search),
     path('genres/<slug:slug>/', genre_retrieve),
     path('genres/<slug:slug>/update/', genre_update),
     path('genres/<slug:slug>/delete/', genre_delete),
-    path('genres/search/', genre_search),
 
     # films
     path('', film_list_create),
+    path('search/', film_search),
     path('<slug:slug>/', film_retrieve, name='film_retrieve'),
     path('<slug:slug>/update/', film_update),
     path('<slug:slug>/delete/', film_delete),
-    path('search/', film_search),
 ]
