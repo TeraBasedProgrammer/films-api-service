@@ -37,6 +37,7 @@ playlist_retrieve = PlaylistDetailAPIView.as_view()
 
 class PlaylistUpdateAPIView(generics.UpdateAPIView):
     queryset = Playlist.objects.all()
+    lookup_field = 'slug'
     serializer_class = PlaylistSerializer
 
 

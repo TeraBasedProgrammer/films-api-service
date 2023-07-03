@@ -39,7 +39,7 @@ class ActorSerializer(serializers.ModelSerializer):
     photo_file = serializers.SerializerMethodField(read_only=True)
 
     # Field for listing related films (drf doesn't see this field from model, so it has to be in serializer)
-    films = serializers.PrimaryKeyRelatedField(queryset=Film.objects.all(), many=True)
+    films = serializers.SlugRelatedField(queryset=Film.objects.all(), many=True, slug_field='slug')
     slug = serializers.SlugField(read_only=True)
 
     class Meta:

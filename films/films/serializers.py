@@ -112,6 +112,7 @@ class FilmListSerializer(serializers.ModelSerializer):
 class FilmSerializer(serializers.ModelSerializer):
     # Additional fields
     screenshots = ScreenshotSerializer(many=True)
+    # screenshots = serializers.ListField()
     poster_file = serializers.SerializerMethodField(read_only=True)
     compressed_poster_file = serializers.SerializerMethodField(read_only=True)
     poster_image = Base64ImageField(write_only=True, validators=[validate_image])

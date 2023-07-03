@@ -12,7 +12,7 @@ class Film(models.Model):
 
     # Format of the poster image (poster name is hardcoded, so it's not stored in db)
     poster_format = models.CharField(max_length=4)
-    rating = models.DecimalField(max_digits=4, decimal_places=2, validators=[validate_rating], default=0.00)
+    rating = models.DecimalField(max_digits=4, decimal_places=2, validators=[validate_rating], null=False, blank=False)
 
     # Many-to-many relations for listing related actors and genres
     genres = models.ManyToManyField('Genre', db_table='FilmGenre')
