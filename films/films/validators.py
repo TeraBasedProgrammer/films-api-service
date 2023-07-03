@@ -53,6 +53,10 @@ def validate_text(value):
 
 
 def validate_image(value):
+    if not value:
+        validation_error_message = "You must provide a valid base64 string"
+        logger.warning(f'Validation error - "{validation_error_message}"')
+        raise ValidationError(validation_error_message)
     # Image size validation
     size_mb = value.file.getbuffer().nbytes / (1024 * 1024)
     if size_mb > 10:
