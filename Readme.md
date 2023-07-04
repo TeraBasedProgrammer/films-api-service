@@ -54,3 +54,16 @@ This RESTful API service is a part of the training project Cinotes (currently un
 
 To see full documentation of the project [import](https://youtu.be/M-qHvBhULes) films-api-docs.json to your Postman workspace.
 
+## License
+
+This project is licensed under GPL v3 license. See file LICENSE.txt.
+
+## Contributing
+
+Feel free to contribute to the project. PR are welcome.
+
+Contact
+---
+
+You can reach me in [telegram](https://t.me/BaseOwner) if you need.
+
