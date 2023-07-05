@@ -52,7 +52,7 @@ This RESTful API service is a part of the training project Cinotes (currently un
   ```
 ## Usage
 
-To see full documentation of the project [import](https://youtu.be/M-qHvBhULes) films-api-docs.json to your Postman workspace.
+To see full documentation of the project [import](https://youtu.be/M-qHvBhULes) __films-api-docs.json__ to your Postman workspace.
 
 ## License
 
