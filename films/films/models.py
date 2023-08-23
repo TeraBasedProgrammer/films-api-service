@@ -1,10 +1,9 @@
-from django.db import models
-from django.db import IntegrityError
+from actors.models import Actor
+from django.db import IntegrityError, models
 from django.utils.text import slugify
 from rest_framework.serializers import ValidationError
 
-from actors.models import Actor
-from .validators import validate_text, validate_rating, validate_names
+from .validators import validate_names, validate_rating, validate_text
 
 
 class Film(models.Model):
@@ -39,9 +38,6 @@ class Film(models.Model):
             super().save(*args, **kwargs)
         except IntegrityError:
             raise ValidationError({"non_field_errors":["The fields title, release_date must make a unique set."]})
-
-    # def __str__(self):
-    #     return self.title
 
 
 class FilmActor(models.Model):

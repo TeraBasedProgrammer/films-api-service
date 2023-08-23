@@ -1,9 +1,10 @@
-from django.core.management.base import BaseCommand
+import logging
+
 from django.conf import settings
+from django.core.management.base import BaseCommand
+
 import films.models as models
 from films.services import clean_s3_model_data
-
-import logging
 
 logger = logging.getLogger('logger')
 

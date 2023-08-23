@@ -5,12 +5,10 @@ from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-
-
-from .models import Film, Genre
-from .serializers import FilmSerializer, FilmListSerializer, GenreSerializer
-from .services import clean_s3_model_data
 from .filters import filter_films
+from .models import Film, Genre
+from .serializers import FilmListSerializer, FilmSerializer, GenreSerializer
+from .services import clean_s3_model_data
 
 
 # Films views

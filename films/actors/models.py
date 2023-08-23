@@ -1,9 +1,8 @@
-from django.db import models
+from django.db import IntegrityError, models
 from django.utils.text import slugify
-from django.db import IntegrityError
 from rest_framework.serializers import ValidationError
 
-from films.validators import validate_text, validate_names
+from films.validators import validate_names, validate_text
 
 
 class Actor(models.Model):

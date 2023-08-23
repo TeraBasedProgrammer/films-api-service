@@ -1,5 +1,6 @@
 from rest_framework.permissions import IsAuthenticated
 
+
 class CustomIsAuthenticated(IsAuthenticated):
     def has_permission(self, request, view):
         excluded_endpoints = ['registration', 'token_obtain_pair', 'token_refresh']  

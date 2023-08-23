@@ -3,10 +3,11 @@ import logging
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
-from .models import Playlist
 from films.models import Film
-from films.serializers import FilmListSerializer, CustomHyperlinkedIdentityField
+from films.serializers import (CustomHyperlinkedIdentityField,
+                               FilmListSerializer)
 
+from .models import Playlist
 
 logger = logging.getLogger('logger')
 

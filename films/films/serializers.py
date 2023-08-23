@@ -1,16 +1,15 @@
 import logging
 
+from actors.models import Actor
+from django.conf import settings
+from django.db import IntegrityError, transaction
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
-from drf_extra_fields.fields import Base64ImageField
-from django.conf import settings
-from django.db import transaction, IntegrityError
 
-from .models import Film, Screenshot, Genre
+from .models import Film, Genre, Screenshot
 from .services import initialize_images
 from .validators import validate_image
-from actors.models import Actor
-
 
 logger = logging.getLogger('logger')
 

@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import playlist_list_create, playlist_retrieve, playlist_update, playlist_delete, playlist_search
 
+from .views import (playlist_delete, playlist_list_create, playlist_retrieve,
+                    playlist_search, playlist_update)
 
 urlpatterns = [
     path('', playlist_list_create),

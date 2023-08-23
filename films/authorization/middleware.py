@@ -1,6 +1,7 @@
 from botocore.exceptions import NoCredentialsError
 from django.http import JsonResponse
 
+
 class NoCredentialsMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response

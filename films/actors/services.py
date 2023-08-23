@@ -2,8 +2,7 @@ import logging
 
 from django.conf import settings
 
-from films.services import create_directory, clear_directory, send_images_to_s3
-
+from films.services import clear_directory, create_directory, send_images_to_s3
 
 logger = logging.getLogger('logger')
 

@@ -1,9 +1,10 @@
 from django.db.models import Q
 from rest_framework import generics
 
-from .models import Actor
-from .serializers import ActorSerializer, ActorListSerializer
 from films.services import clean_s3_model_data
+
+from .models import Actor
+from .serializers import ActorListSerializer, ActorSerializer
 
 
 # Films views

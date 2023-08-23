@@ -1,7 +1,6 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import IntegrityError, models
 from django.utils.text import slugify
-from django.db import IntegrityError
 from rest_framework.serializers import ValidationError
 
 

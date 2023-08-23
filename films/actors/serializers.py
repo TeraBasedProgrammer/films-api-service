@@ -1,16 +1,16 @@
 import logging
 
-from rest_framework import serializers
-from drf_extra_fields.fields import Base64ImageField
 from django.db import transaction
 from django.utils.text import slugify
+from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers
+
+from films.models import Film
+from films.serializers import CustomHyperlinkedIdentityField
+from films.validators import validate_image
 
 from .models import Actor
-from films.models import Film
-from films.validators import validate_image
 from .services import initialize_photo
-from films.serializers import CustomHyperlinkedIdentityField
-
 
 logger = logging.getLogger('logger')
 

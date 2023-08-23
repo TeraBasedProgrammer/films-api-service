@@ -1,8 +1,9 @@
 from django.urls import path
 
-from .views import (film_list_create, film_retrieve, film_update, film_delete, film_search,
-                    genre_list_create, genre_retrieve, genre_update, genre_delete, genre_search,
-                    country_list_view)
+from .views import (country_list_view, film_delete, film_list_create,
+                    film_retrieve, film_search, film_update, genre_delete,
+                    genre_list_create, genre_retrieve, genre_search,
+                    genre_update)
 
 urlpatterns = [
     # countries

@@ -4,7 +4,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from .models import Playlist
-from .serializers import PlaylistSerializer, PlaylistListSerializer
+from .serializers import PlaylistListSerializer, PlaylistSerializer
 
 
 # Playlists views
